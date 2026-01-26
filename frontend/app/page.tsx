@@ -57,9 +57,13 @@ export default function Home() {
       }}
     >
       <div style={{ width: "100%", maxWidth: "1200px" }}>
-        <h1 style={{ textAlign: "center", marginBottom: 40 }}>
-          Indonesia Fuel Price Forecast
+        <h1 style={{ textAlign: "center", marginBottom: 10 }}>
+          Prediksi Harga Bensin
         </h1>
+
+        <p style={{ textAlign: "center", color: "#666", marginBottom: 40 }}>
+          for next month
+        </p>
 
         <div
           style={{
@@ -122,6 +126,9 @@ export default function Home() {
 
         <p style={{ marginTop: 40, textAlign: "center", color: "#777" }}>
           Updated: {new Date(row.created_at).toLocaleString()}
+        </p>
+        <p style={{ marginTop: 10, textAlign: "center", color: "#777" }}>
+          by Audi Armadhani
         </p>
       </div>
     </main>
