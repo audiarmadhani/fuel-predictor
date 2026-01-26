@@ -3,170 +3,142 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// ===================================================
-//                SUPABASE CLIENT
-// ===================================================
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// ===================================================
-//                 BRAND NAME MAPPING
-// ===================================================
-const NAME_MAP: Record<string, string> = {
+// mapping
+const LABELS: Record<string, string> = {
   bp_92: "BP 92",
   bp_95: "BP Ultimate",
-
   vivo_90: "Revvo 90",
   vivo_92: "Revvo 92",
   vivo_95: "Revvo 95",
-
   shell_92: "Super",
   shell_95: "V-Power",
   shell_98: "V-Power Nitro+",
-
   pertamina_90: "Pertalite",
   pertamina_92: "Pertamax",
   pertamina_95: "Pertamax Green",
   pertamina_98: "Pertamax Turbo",
 };
 
-// Group by RON
-const RON_GROUPS = {
+// grouping
+const GROUPS = {
   "RON 90": ["pertamina_90", "vivo_90"],
-  "RON 92": ["pertamina_92", "shell_92", "bp_92", "vivo_92"],
-  "RON 95": ["pertamina_95", "shell_95", "bp_95", "vivo_95"],
+  "RON 92": ["pertamina_92", "bp_92", "vivo_92", "shell_92"],
+  "RON 95": ["pertamina_95", "bp_95", "vivo_95", "shell_95"],
   "RON 98": ["pertamina_98", "shell_98"],
 };
 
-// ===================================================
-//               ROUNDER FUNCTION
-// ===================================================
-function roundToNearest10(value: number) {
-  return Math.round(value / 10) * 10;
-}
-
-// ===================================================
-//                    COMPONENT
-// ===================================================
 export default function Home() {
   const [row, setRow] = useState<any>(null);
-  const [dark, setDark] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load last prediction
+  // Fetch from Supabase
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from("predictions")
-        .select("*")
-        .order("id", { ascending: false })
-        .limit(1);
+      try {
+        console.log("Fetching from Supabase...");
 
-      if (data && data.length > 0) setRow(data[0]);
+        const { data, error } = await supabase
+          .from("predictions")
+          .select("*")
+          .order("id", { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.error("Supabase ERROR:", error);
+          setError(error.message);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          setError("No data found in Supabase.");
+          return;
+        }
+
+        console.log("Supabase DATA:", data[0]);
+        setRow(data[0]);
+      } catch (err: any) {
+        console.error("Unexpected fetch error:", err);
+        setError(err.message);
+      }
     }
 
     load();
   }, []);
 
-  // Apply dark mode
-  useEffect(() => {
-    if (dark) document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
-  }, [dark]);
-
-  if (!row)
+  // If error — show it
+  if (error)
     return (
-      <main className="p-10 text-center text-gray-600 dark:text-gray-300">
-        Loading…
-      </main>
+      <div style={{ padding: 40 }}>
+        <h2>Error loading data:</h2>
+        <pre>{error}</pre>
+      </div>
     );
+
+  // Still loading
+  if (!row) return <div style={{ padding: 40 }}>Loading…</div>;
 
   const pred = row.model;
   const conf = row.confidence;
 
-  const month = row.month; // already next month from backend
-  const updated = new Date(row.created_at).toLocaleString("id-ID");
+  // Compute next month
+  const dt = new Date();
+  dt.setMonth(dt.getMonth() + 1);
+  const monthStr = dt.toLocaleString("id-ID", { month: "long", year: "numeric" });
 
   return (
     <main
-      className="
-      min-h-screen 
-      bg-gray-100 text-gray-900 
-      dark:bg-[#0d0d0d] dark:text-gray-100
-      p-6 md:p-10
-    "
+      style={{
+        padding: 40,
+        fontFamily: "sans-serif",
+        color: "#eee",
+        background: "#111",
+        minHeight: "100vh",
+      }}
     >
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Fuel Price Forecast – Indonesia
-        </h1>
+      <h1>Prediksi Harga BBM</h1>
+      <p>Perkiraan harga untuk bulan {monthStr}</p>
 
-        <button
-          onClick={() => setDark(!dark)}
-          className="
-            px-3 py-1 border rounded text-sm
-            dark:border-gray-500 dark:bg-gray-800
-          "
-        >
-          {dark ? "Light Mode" : "Dark Mode"}
-        </button>
-      </div>
+      {Object.entries(GROUPS).map(([ronLabel, fuels]) => (
+        <div key={ronLabel} style={{ marginTop: 30 }}>
+          <h2>{ronLabel}</h2>
 
-      <p className="text-lg mb-6">
-        Predicted retail prices for <strong>{month}</strong>
-      </p>
+          <table border={1} cellPadding={10} style={{ width: "100%", marginTop: 10 }}>
+            <thead>
+              <tr>
+                <th>Brand</th>
+                <th>Prediksi Harga</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
 
-      {/* ===================================================
-                     GROUPED RON SECTIONS
-      =================================================== */}
-      <div className="space-y-10">
-        {Object.entries(RON_GROUPS).map(([ronLabel, fuels]) => (
-          <section key={ronLabel}>
-            <h2 className="text-xl font-semibold mb-3 border-b border-gray-300 dark:border-gray-700 pb-1">
-              {ronLabel}
-            </h2>
+            <tbody>
+              {fuels.map((fuelKey) => {
+                if (!pred[fuelKey]) return null;
 
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="bg-gray-200 dark:bg-gray-800">
-                  <th className="p-2 border border-gray-300 dark:border-gray-700 text-left">
-                    Brand
-                  </th>
-                  <th className="p-2 border border-gray-300 dark:border-gray-700 text-right">
-                    Predicted Price
-                  </th>
-                  <th className="p-2 border border-gray-300 dark:border-gray-700 text-center">
-                    Confidence
-                  </th>
-                </tr>
-              </thead>
+                // ROUND: e.g., 14.175,88 → 14.170 (nearest 10 rupiah)
+                const rawPrice = pred[fuelKey];
+                const rounded = Math.round(rawPrice / 10) * 10;
 
-              <tbody>
-                {fuels.map((fuel) => (
-                  <tr key={fuel} className="odd:bg-white even:bg-gray-50 dark:odd:bg-[#111] dark:even:bg-[#1a1a1a]">
-                    <td className="p-2 border border-gray-300 dark:border-gray-700">
-                      {NAME_MAP[fuel]}
-                    </td>
-
-                    <td className="p-2 border border-gray-300 dark:border-gray-700 text-right">
-                      {roundToNearest10(pred[fuel]).toLocaleString("id-ID")}
-                    </td>
-
-                    <td className="p-2 border border-gray-300 dark:border-gray-700 text-center">
-                      {Math.round(conf[fuel])}%
-                    </td>
+                return (
+                  <tr key={fuelKey}>
+                    <td>{LABELS[fuelKey]}</td>
+                    <td>{rounded.toLocaleString("id-ID")}</td>
+                    <td>{Math.round(conf[fuelKey])}%</td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        ))}
-      </div>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ))}
 
-      <p className="mt-10 text-sm text-gray-500 dark:text-gray-400">
-        Updated: {updated}
+      <p style={{ marginTop: 20, color: "#888" }}>
+        Terakhir diperbarui: {new Date(row.created_at).toLocaleString("id-ID")}
       </p>
     </main>
   );
