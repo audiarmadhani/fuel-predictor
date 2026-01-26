@@ -1,10 +1,11 @@
 import os
-from fetch_and_update import update_historical
-from exog_loader import update_exog_history
-from merge_dataset import merge_monthly_dataset
-from train_models import train_all_models
-from predict import predict_next_month
-from fetch_isibens import fetch_isibens_file
+from pipeline.fetch_and_update import update_historical
+from pipeline.exog_loader import update_exog_history
+from pipeline.merge_dataset import merge_monthly_dataset
+from pipeline.train_models import train_all_models
+from pipeline.predict import predict_next_month
+from pipeline.fetch_isibens import fetch_isibens_file
+import traceback
 
 
 def run_pipeline():
