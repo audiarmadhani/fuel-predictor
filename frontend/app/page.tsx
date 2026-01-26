@@ -61,13 +61,9 @@ export default function Home() {
           Indonesia Fuel Price Forecast
         </h1>
 
-        <p style={{ textAlign: "center", color: "#666", marginBottom: 40 }}>
-          Prediction for next month
-        </p>
-
         <div
           style={{
-            width: "70%",
+            width: "80%",
             margin: "0 auto",
             overflowX: "auto",
           }}
