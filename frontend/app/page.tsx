@@ -162,7 +162,7 @@ function renderCell(key: string, preds: any, confs: any) {
 const thStyle: React.CSSProperties = {
   padding: "12px 10px",
   borderBottom: "2px solid #ddd",
-  background: "#f7f7f7",
+  background: "#616161ff",
 };
 
 const tdStyle: React.CSSProperties = {
