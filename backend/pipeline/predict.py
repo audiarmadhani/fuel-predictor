@@ -54,7 +54,7 @@ def predict_next_month():
         feature_cols = meta["features"]
 
         X_pred = next_month[feature_cols].copy()
-        X_pred = X_pred.fillna(method="ffill").fillna(method="bfill").fillna(0)
+        X_pred = X_pred.ffill().bfill().fillna(0)
 
         yhat = float(model.predict(X_pred)[0])
 

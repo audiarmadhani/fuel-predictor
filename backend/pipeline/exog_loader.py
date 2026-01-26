@@ -23,7 +23,7 @@ def fetch_full_daily():
     return df
 
 
-# ----------------------------------------------------------
+# ---------------------------------------------------------- 
 # Convert daily → monthly (use last day of month)
 # Then convert index to YYYY-MM-01
 # ----------------------------------------------------------
@@ -31,7 +31,7 @@ def convert_to_monthly(df):
 
     print("[INFO] Resampling daily → monthly…")
 
-    monthly = df.resample("M").last()
+    monthly = df.resample("ME").last()
     monthly.index = monthly.index.to_period("M").to_timestamp()
 
     # convert to YYYY-MM-01
