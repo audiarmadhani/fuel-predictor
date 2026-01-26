@@ -1,10 +1,13 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from pipeline.fetch_and_update import update_historical
 from pipeline.exog_loader import update_exog_history
 from pipeline.merge_dataset import merge_monthly_dataset
 from pipeline.train_models import train_all_models
 from pipeline.predict import predict_next_month
 from pipeline.fetch_isibens import fetch_isibens_file
+from pipeline.supabase_writer import write_prediction_to_supabase
 import traceback
 
 
@@ -51,7 +54,11 @@ def run_pipeline():
         # STEP 6: PREDICT NEXT MONTH
         # --------------------------------------------------------
         print("\n[ STEP 6 ] Predicting next month’s fuel prices…")
-        results = predict_next_month()
+
+        month, results = predict_next_month()
+
+        # Save results to Supabase
+        write_prediction_to_supabase(month, results)
 
         print("\n===== FINAL PREDICTION OUTPUT =====")
         for brand_ron, obj in results.items():

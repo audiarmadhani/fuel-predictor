@@ -17,75 +17,102 @@ TARGET_COLS = [
 ]
 
 
+# --------------------------------------------------------
+# LOAD LATEST EXOG ROW
+# --------------------------------------------------------
 def load_latest_exogs():
-    df = pd.read_csv(EXOG_PATH)
-    df = df.sort_values("month")
-    last = df.iloc[-1].to_dict()
+    ex = pd.read_csv(EXOG_PATH)
+    ex = ex.sort_values("month")
+    last = ex.iloc[-1].to_dict()
 
-    return {k: last[k] for k in last if k not in ["month"]}
+    # month is needed for return value
+    next_month = last["month"]
+
+    # Exclude month from feature inputs
+    cleaned = {k: last[k] for k in last if k != "month"}
+
+    return next_month, cleaned
 
 
+# --------------------------------------------------------
+# MAIN PREDICT FUNCTION
+# --------------------------------------------------------
 def predict_next_month():
 
-    merged = pd.read_csv(MERGED_PATH)
-    merged = merged.sort_values("month")
+    # Load merged data (just for sanity check or future use)
+    merged = pd.read_csv(MERGED_PATH).sort_values("month")
 
-    latest_exogs = load_latest_exogs()
-    next_month = pd.DataFrame([latest_exogs])
+    # Load latest exog row + predicted target month
+    next_month, latest_exogs = load_latest_exogs()
+
+    # Build a dataframe for model prediction
+    next_exog_df = pd.DataFrame([latest_exogs])
 
     predictions = {}
-    fuel_df = merged.copy()
 
     for col in TARGET_COLS:
 
         model_dir = os.path.join(MODEL_DIR, col)
-
         model_path = os.path.join(model_dir, "model.pkl")
         meta_path = os.path.join(model_dir, "meta.json")
 
         if not os.path.exists(model_path) or not os.path.exists(meta_path):
-            print(f"[WARN] Missing model for {col}")
+            print(f"[WARN] Missing model for {col}, skipping...")
             continue
 
+        # Load model + metadata
         model = joblib.load(model_path)
         meta = json.load(open(meta_path))
 
         mae = meta["mae"]
         feature_cols = meta["features"]
 
-        X_pred = next_month[feature_cols].copy()
+        # Build X_pred
+        X_pred = next_exog_df.reindex(columns=feature_cols)
         X_pred = X_pred.ffill().bfill().fillna(0)
 
         yhat = float(model.predict(X_pred)[0])
 
-        confidence = max(0.0, 1 - (mae / max(yhat, 1)))
+        # Simple confidence
+        confidence = max(0.0, 1 - (mae / max(abs(yhat), 1)))
         confidence_pct = round(confidence * 100, 2)
 
         predictions[col] = {
             "price": yhat,
-            "confidence_pct": confidence_pct,
+            "confidence_pct": confidence_pct
         }
 
-    # Enforce brand hierarchy
-    def enforce_rule(ron):
-        p = predictions[f"pertamina_{ron}"]["price"]
+    # --------------------------------------------------------
+    # PRICE FLOOR RULES:
+    # vivo, bp, shell cannot go lower than Pertamina (same RON)
+    # --------------------------------------------------------
+    def enforce_floor(ron):
+        pert = f"pertamina_{ron}"
+        if pert not in predictions:
+            return
+
+        base_price = predictions[pert]["price"]
 
         for brand in ["vivo", "bp", "shell"]:
             key = f"{brand}_{ron}"
-            if key in predictions:
-                if predictions[key]["price"] < p:
-                    predictions[key]["price"] = p
+            if key in predictions and predictions[key]["price"] < base_price:
+                predictions[key]["price"] = base_price
 
-    enforce_rule("90")
-    enforce_rule("92")
-    enforce_rule("95")
-    enforce_rule("98")
+    enforce_floor("90")
+    enforce_floor("92")
+    enforce_floor("95")
+    enforce_floor("98")
 
-    return predictions
+    # Return both month and predictions in a clean structure
+    return next_month, predictions
 
 
 
+# --------------------------------------------------------
+# Manual test mode
+# --------------------------------------------------------
 if __name__ == "__main__":
-    preds = predict_next_month()
+    month, preds = predict_next_month()
+    print("Next month:", month)
     print("\n===== FINAL PREDICTION OUTPUT =====")
-    print(preds)
+    print(json.dumps(preds, indent=2))
