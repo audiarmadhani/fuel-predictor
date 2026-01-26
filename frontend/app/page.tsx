@@ -57,13 +57,16 @@ export default function Home() {
       }}
     >
       <div style={{ width: "100%", maxWidth: "1200px" }}>
-        <h1 style={{ textAlign: "center", marginBottom: 10 }}>
+        <h1
+          style={{
+            textAlign: "center",
+            marginBottom: 40,
+            fontSize: "48px",
+            fontWeight: 700,
+          }}
+        >
           Prediksi Harga Bensin
         </h1>
-
-        <p style={{ textAlign: "center", color: "#666", marginBottom: 40 }}>
-          for next month
-        </p>
 
         <div
           style={{
