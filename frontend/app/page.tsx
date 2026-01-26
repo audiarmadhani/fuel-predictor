@@ -22,10 +22,15 @@ export default async function Home() {
   const model: Record<string, number> = row.model;
   const confidence: Record<string, number> = row.confidence;
 
+  const current = new Date(row.month + "-01T00:00:00");
+  const next = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+  const nextMonthLabel = next.toISOString().slice(0, 7);
+
   return (
     <main style={{ padding: 40, fontFamily: "Arial, sans-serif" }}>
       <h1>Fuel Price Forecast</h1>
-      <p>Predictions for next month: <strong>{row.month}</strong></p>
+
+      <p>Predictions for next month ({nextMonthLabel})</p>
 
       <table
         border={1}
@@ -43,7 +48,9 @@ export default async function Home() {
           {Object.entries(model).map(([fuel, price]) => (
             <tr key={fuel}>
               <td>{fuel}</td>
-              <td>{Math.round(Number(price)).toLocaleString("id-ID")}</td>
+              <td>
+                {Math.floor((Number(price) / 10) * 10).toLocaleString("id-ID")}
+              </td>
               <td>{Math.round(Number(confidence[fuel]))}%</td>
             </tr>
           ))}
