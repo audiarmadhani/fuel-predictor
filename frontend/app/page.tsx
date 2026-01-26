@@ -57,7 +57,7 @@ export default function Home() {
       }}
     >
       <div style={{ width: "100%", maxWidth: "1200px" }}>
-        <h1 style={{ textAlign: "center", marginBottom: 10 }}>
+        <h1 style={{ textAlign: "center", marginBottom: 40 }}>
           Indonesia Fuel Price Forecast
         </h1>
 
