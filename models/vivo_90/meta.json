@@ -1,0 +1,15 @@
+{
+  "model_name": "extratrees",
+  "mae": 649.2279797979796,
+  "features": [
+    "brent",
+    "rbob",
+    "usd_idr",
+    "rbob_liter",
+    "base_mops",
+    "RON92",
+    "RON95",
+    "RON98",
+    "RON90"
+  ]
+}
