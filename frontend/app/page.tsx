@@ -45,6 +45,7 @@ export default function Home() {
 
   const preds = row.model;
   const confs = row.confidence;
+  const current = row.current_prices;
 
   return (
     <main
@@ -60,11 +61,10 @@ export default function Home() {
           Indonesia Fuel Price Forecast
         </h1>
 
-        <p style={{ textAlign: "center", marginBottom: 40, color: "#666" }}>
+        <p style={{ textAlign: "center", color: "#666", marginBottom: 40 }}>
           Prediction for next month
         </p>
 
-        {/* TABLE WRAPPER */}
         <div
           style={{
             width: "70%",
@@ -76,7 +76,6 @@ export default function Home() {
             style={{
               width: "100%",
               borderCollapse: "collapse",
-              fontSize: 16,
             }}
           >
             <thead>
@@ -92,33 +91,32 @@ export default function Home() {
             <tbody>
               {RON_LIST.map((ron) => (
                 <tr key={ron}>
-                  {/* RON column */}
                   <td style={ronCellStyle}>RON {ron}</td>
 
                   {/* Pertamina */}
                   <td style={tdStyle}>
-                    {renderCell(`pertamina_${ron}`, preds, confs)}
+                    {renderCell(`pertamina_${ron}`, preds, confs, current)}
                   </td>
 
-                  {/* BP (only 92 & 95) */}
+                  {/* BP */}
                   <td style={tdStyle}>
-                    {ron === "90" || ron === "98"
-                      ? "-"
-                      : renderCell(`bp_${ron}`, preds, confs)}
+                    {["92", "95"].includes(ron)
+                      ? renderCell(`bp_${ron}`, preds, confs, current)
+                      : "-"}
                   </td>
 
-                  {/* Shell (92, 95, 98) */}
+                  {/* Shell */}
                   <td style={tdStyle}>
                     {ron === "90"
                       ? "-"
-                      : renderCell(`shell_${ron}`, preds, confs)}
+                      : renderCell(`shell_${ron}`, preds, confs, current)}
                   </td>
 
                   {/* Vivo */}
                   <td style={tdStyle}>
                     {ron === "98"
                       ? "-"
-                      : renderCell(`vivo_${ron}`, preds, confs)}
+                      : renderCell(`vivo_${ron}`, preds, confs, current)}
                   </td>
                 </tr>
               ))}
@@ -134,25 +132,58 @@ export default function Home() {
   );
 }
 
-/** ---------- Helpers ---------- **/
-
-function renderCell(key: string, preds: any, confs: any) {
+/** Renders each cell with:
+ * - Predicted price
+ * - Fuel name
+ * - Confidence
+ * - Price comparison (▲ ▼ ●)
+ */
+function renderCell(
+  key: string,
+  preds: any,
+  confs: any,
+  current: any
+) {
   if (!preds[key]) return "-";
 
-  const price = Math.round(preds[key] / 10) * 10; // rounded to nearest 10
+  const predicted = Math.round(preds[key] / 10) * 10;
+  const curr = current?.[key] ? Math.round(current[key] / 10) * 10 : null;
   const conf = Math.round(confs[key]);
+
+  let diffSymbol = "●";
+  let diffColor = "#888";
+
+  if (curr !== null) {
+    if (predicted > curr) {
+      diffSymbol = "▲";
+      diffColor = "green";
+    } else if (predicted < curr) {
+      diffSymbol = "▼";
+      diffColor = "red";
+    }
+  }
 
   return (
     <div>
       <div style={{ fontSize: 20, fontWeight: 600 }}>
-        {price.toLocaleString("id-ID")}
+        {predicted.toLocaleString("id-ID")}
+        {"  "}
+        <span style={{ color: diffColor, fontSize: 14 }}>{diffSymbol}</span>
       </div>
 
-      <div style={{ fontSize: 12, color: "#777" }}>
+      {curr !== null && (
+        <div style={{ fontSize: 12, color: "#777" }}>
+          Current: {curr.toLocaleString("id-ID")}
+        </div>
+      )}
+
+      <div style={{ fontSize: 12, color: "#777", marginTop: 2 }}>
         {BRAND_LABELS[key] || key}
       </div>
 
-      <div style={{ fontSize: 11, color: "#aaa" }}>Confidence: {conf}%</div>
+      <div style={{ fontSize: 11, color: "#aaa" }}>
+        Confidence: {conf}%
+      </div>
     </div>
   );
 }
@@ -162,7 +193,8 @@ function renderCell(key: string, preds: any, confs: any) {
 const thStyle: React.CSSProperties = {
   padding: "12px 10px",
   borderBottom: "2px solid #ddd",
-  background: "#616161ff",
+  background: "#3a3a3aff",
+  textAlign: "center",
 };
 
 const tdStyle: React.CSSProperties = {
