@@ -2,3 +2,4 @@ ifastapi
 uvicorn
 python-dotenv
 supabase
+fastapi
