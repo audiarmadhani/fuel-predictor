@@ -207,7 +207,6 @@ export default function Home() {
         @media (max-width: 768px) {
           .table-wrapper {
             width: 100% !important;
-            padding: 0 6px;
           }
         }
       `}</style>
