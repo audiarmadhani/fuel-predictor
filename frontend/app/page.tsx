@@ -419,8 +419,15 @@ const GLOBAL_CSS = (
       text-align: center;
     }
 
+    .footer-icons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+    }
+
     .footer-icon {
-      margin: 0 14px;
       cursor: pointer;
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
@@ -428,6 +435,12 @@ const GLOBAL_CSS = (
     .footer-icon:hover {
       opacity: 0.7;
       transform: scale(1.08);
+    }
+
+    @media (max-width: 600px) {
+      .footer-icons {
+        gap: 18px;
+      }
     }
 
     @media (max-width: 768px) {
