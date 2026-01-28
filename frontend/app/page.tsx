@@ -250,7 +250,7 @@ export default function Home() {
 
               <div className="footer-icons">
                 <a
-                  href="https://github.com/YOUR_GITHUB"
+                  href="https://github.com/audiarmadhani/fuel-predictor"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -273,7 +273,7 @@ export default function Home() {
                 </a>
 
                 <a
-                  href="https://www.linkedin.com/in/YOUR_LINKEDIN"
+                  href="https://www.linkedin.com/in/audiarmadhani/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
