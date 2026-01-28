@@ -74,6 +74,10 @@ export default function Home() {
       <div className="container">
         <h1 className="title">Prediksi Harga Bensin</h1>
 
+        <p className="updated">
+          Not Financial Advice. DYOR.
+        </p>
+
         <div className="table-wrapper">
           <table className="fuel-table">
             <thead>
