@@ -3,7 +3,6 @@ from supabase import create_client
 from dotenv import load_dotenv
 import hashlib
 import os
-import time
 
 load_dotenv()
 
@@ -14,29 +13,41 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_
 def hash_ip(ip: str) -> str:
     return hashlib.sha256(ip.encode()).hexdigest()
 
+
 @router.post("/track")
 async def track_visit(request: Request):
     ip = request.client.host or "unknown"
     ip_h = hash_ip(ip)
-
     user_agent = request.headers.get("user-agent", "unknown")
 
-    # Get fingerprint from frontend if sent
-    body = await request.json() if request.method == "POST" else {}
-    fp = body.get("fp", None)
+    # Try reading JSON body safely
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
 
-    # Check if this visitor already exists
-    existing = supabase.table("visits").select("*") \
-        .eq("ip_hash", ip_h).maybe_single().execute()
+    fp = body.get("fp")
 
-    row = existing.data if existing.data else None
+    # ----- READ EXISTING VISITOR -----
+    existing = supabase.table("visits") \
+        .select("*") \
+        .eq("ip_hash", ip_h) \
+        .maybe_single() \
+        .execute()
 
+    # Safely extract data (could be None)
+    row = None
+    if existing and hasattr(existing, "data") and existing.data:
+        row = existing.data
+
+    # ----- UPDATE OR INSERT -----
     if row:
-        # Update visit counter
+        # Update returning visitor
         supabase.table("visits").update({
             "visits": row["visits"] + 1,
             "last_seen": "NOW()"
         }).eq("id", row["id"]).execute()
+
     else:
         # Insert new visitor
         supabase.table("visits").insert({
