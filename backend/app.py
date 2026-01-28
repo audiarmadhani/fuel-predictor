@@ -1,10 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.healthcheck import router as health_router
-from api.latest_prediction import router as latest_router
-from api.predict_endpoint import router as predict_router
-
 from api.history import router as history_router
 
 app = FastAPI(
@@ -21,12 +17,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Register API routers
-app.include_router(health_router, prefix="/health")
-app.include_router(latest_router, prefix="/latest")
-app.include_router(predict_router, prefix="/predict")
-
 
 @app.get("/")
 def root():
