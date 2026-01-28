@@ -15,6 +15,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+import CorrelationHeatmap from "@/components/CorrelationHeatmap";
+
 /* ------------------ CONSTANTS ------------------ */
 
 const BRAND_LABELS: Record<string, string> = {
@@ -161,6 +163,8 @@ useEffect(() => {
 
         {/* ---------- GRAPH ---------- */}
         <RonGraph history={history} />
+
+        <CorrelationHeatmap history={history} />
 
         <p className="updated">
           Last Updated: {new Date(row.created_at).toLocaleString()}
