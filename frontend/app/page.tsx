@@ -28,7 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [dark, setDark] = useState(false);
 
-  /* ---------- LOAD DARK MODE ---------- */
+  /* ---------- INIT DARK MODE ---------- */
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
     const isDark = saved === "true";
@@ -36,12 +36,12 @@ export default function Home() {
     document.body.classList.toggle("dark", isDark);
   }, []);
 
-  function toggleDark() {
+  const toggleDark = () => {
     const next = !dark;
     setDark(next);
     document.body.classList.toggle("dark", next);
     localStorage.setItem("darkMode", next.toString());
-  }
+  };
 
   /* ---------- LOAD DATA ---------- */
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function Home() {
         position: "relative",
       }}
     >
-      {/* Dark/Light Toggle */}
+      {/* DARK MODE TOGGLE */}
       <button
         onClick={toggleDark}
         style={{
@@ -85,6 +85,7 @@ export default function Home() {
           background: "none",
           border: "none",
           cursor: "pointer",
+          color: "var(--text)",
         }}
       >
         {dark ? "🌞" : "🌙"}
@@ -97,6 +98,7 @@ export default function Home() {
             marginBottom: 30,
             fontSize: 36,
             fontWeight: 700,
+            color: "var(--text)",
           }}
         >
           Prediksi Harga Bensin
@@ -113,6 +115,7 @@ export default function Home() {
             style={{
               width: "100%",
               borderCollapse: "collapse",
+              background: "var(--card)",
             }}
           >
             <thead>
@@ -160,48 +163,101 @@ export default function Home() {
         </p>
       </div>
 
-      {/* MOBILE CSS */}
+      {/* ---------- GLOBAL CSS ---------- */}
       <style>{`
+        :root {
+          --bg: #f8f8f8;
+          --text: #222;
+          --text2: #555;
+          --text3: #777;
+          --card: #ffffff;
+          --th-bg: #e6e6e6;
+          --border: #cccccc;
+        }
+
+        body.dark {
+          --bg: #111;
+          --text: #eee;
+          --text2: #ccc;
+          --text3: #999;
+          --card: #1d1d1d;
+          --th-bg: #333;
+          --border: #444;
+        }
+
+        body {
+          background: var(--bg);
+          color: var(--text);
+          transition: background 0.3s, color 0.3s;
+        }
+
+        table {
+          color: var(--text);
+          border: 1px solid var(--border);
+        }
+
+        th {
+          border-bottom: 2px solid var(--border);
+        }
+
+        td {
+          border-bottom: 1px solid var(--border);
+        }
+
         @media (max-width: 768px) {
           .table-wrapper {
             width: 100% !important;
             padding: 0 12px;
           }
         }
-        body.dark {
-          background: #111;
-          color: #eee;
-        }
-        body.dark table {
-          color: #eee;
-        }
       `}</style>
     </main>
   );
 }
 
-/* ---------- Render Cell (with range) ---------- */
-function renderCell(key: string, preds: any, confs: any, current: any) {
+/* ---------- CELL RENDERING ---------- */
+function renderCell(
+  key: string,
+  preds: any,
+  confs: any,
+  current: any
+) {
   if (!preds[key]) return "-";
 
   let predicted = preds[key];
 
-  // Lock Pertalite at 10.000
-  if (key === "pertamina_90") {
-    predicted = 10000;
-  }
+  if (key === "pertamina_90") predicted = 10000;
 
-  // PRICE RANGE CALC
   const low = Math.floor(predicted / 100) * 100;
   const high = Math.ceil(predicted / 100) * 100;
+  const midpoint = Math.round((low + high) / 2);
 
   const conf = Math.round(confs[key]);
   const curr = current?.[key] || null;
 
+  let diffSymbol = "●";
+  let diffColor = "var(--text3)";
+
+  if (curr !== null) {
+    if (midpoint > curr) {
+      diffSymbol = "▲";
+      diffColor = "green";
+    } else if (midpoint < curr) {
+      diffSymbol = "▼";
+      diffColor = "red";
+    }
+  }
+
   return (
     <div>
       <div style={{ fontSize: 20, fontWeight: 600 }}>
-        {low.toLocaleString("id-ID")} – {high.toLocaleString("id-ID")}
+        {low === high
+          ? low.toLocaleString("id-ID")
+          : `${low.toLocaleString("id-ID")} – ${high.toLocaleString("id-ID")}`}
+        {" "}
+        <span style={{ color: diffColor, fontSize: 14 }}>
+          {diffSymbol}
+        </span>
       </div>
 
       {curr !== null && (
@@ -221,19 +277,17 @@ function renderCell(key: string, preds: any, confs: any, current: any) {
   );
 }
 
-/* ---------- Styles ---------- */
+/* ---------- TABLE STYLES ---------- */
 const thStyle: React.CSSProperties = {
   padding: "12px 10px",
-  borderBottom: "2px solid #444",
   background: "var(--th-bg)",
   textAlign: "center",
-  color: "white",
+  color: "var(--text)",
 };
 
 const tdStyle: React.CSSProperties = {
   padding: "14px 10px",
   textAlign: "center",
-  borderBottom: "1px solid #333",
 };
 
 const ronCellStyle: React.CSSProperties = {
