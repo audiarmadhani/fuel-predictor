@@ -94,9 +94,6 @@ export default function Home() {
     })();
   }, []);
 
-    if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
-    if (!row) return <div style={{ padding: 40 }}>No predictions yet</div>;
-
     const preds = row.model;
     const confs = row.confidence;
     const current = row.current_prices;
@@ -109,176 +106,191 @@ export default function Home() {
 
   /* ------------------ PAGE RENDER ------------------ */
   return (
-    <main className="page">
+    <div className="container">
 
-      {/* ---------- HEADER ---------- */}
-      <header className="header">
-        <div>
-          <div className="header-title">prediksi bensin</div>
-          <div className="header-sub">not financial advice. DYOR.</div>
-        </div>
+      {loading && (
+        <div style={{ padding: 40 }}>Loading...</div>
+      )}
 
-        <button className="dark-toggle" onClick={toggleDark}>
-          {dark ? "🌚" : "🌝"}
-        </button>
-      </header>
+      {!loading && !row && (
+        <div style={{ padding: 40 }}>No predictions yet</div>
+      )}
 
-      <div className="container">
-        
-        {/* ---------- TABLE ---------- */}
-        <div className="table-wrapper">
-          <table className="fuel-table">
-            <thead>
-              <tr>
-                <th>RON</th>
-                <th>Pertamina</th>
-                <th>BP</th>
-                <th>Shell</th>
-                <th>Vivo</th>
-              </tr>
-            </thead>
+      {!loading && row && (
+        <>
+          <main className="page">
 
-            <tbody>
-              {RON_LIST.map((ron) => (
-                <tr key={ron}>
-                  <td className="ron-cell">RON {ron}</td>
+            {/* ---------- HEADER ---------- */}
+            <header className="header">
+              <div>
+                <div className="header-title">prediksi bensin</div>
+                <div className="header-sub">not financial advice. DYOR.</div>
+              </div>
 
-                  {/* Pertamina */}
-                  <td>{renderCell(`pertamina_${ron}`, preds, confs, current)}</td>
-
-                  {/* BP */}
-                  <td>
-                    {["92", "95"].includes(ron)
-                      ? renderCell(`bp_${ron}`, preds, confs, current)
-                      : "-"}
-                  </td>
-
-                  {/* Shell */}
-                  <td>
-                    {ron === "90"
-                      ? "-"
-                      : renderCell(`shell_${ron}`, preds, confs, current)}
-                  </td>
-
-                  {/* Vivo */}
-                  <td>
-                    {ron === "98"
-                      ? "-"
-                      : renderCell(`vivo_${ron}`, preds, confs, current)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* ---------- GRAPH ---------- */}
-        {/* ---------- SHOW MORE DATA SECTION ---------- */}
-        {!showMore && (
-          <div style={{ textAlign: "center", marginTop: 40 }}>
-            <button
-              onClick={() => setShowMore(true)}
-              style={{
-                padding: "12px 24px",
-                borderRadius: 8,
-                border: "1px solid var(--border)",
-                background: "var(--card)",
-                color: "var(--text)",
-                cursor: "pointer",
-                fontSize: 16,
-              }}
-            >
-              show more
-            </button>
-          </div>
-        )}
-
-        {showMore && (
-          <>
-            <LineGraph history={history} />
-
-            <div style={{ width: "75%", margin: "40px auto" }}>
-              <CorrelationHeatmap history={history} />
-            </div>
-
-            {/* ---------- SHOW LESS BUTTON ---------- */}
-            <div style={{ textAlign: "center", marginTop: 20 }}>
-              <button
-                onClick={() => setShowMore(false)}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: "var(--card)",
-                  color: "var(--text)",
-                  cursor: "pointer",
-                  fontSize: 14,
-                }}
-              >
-                show less
+              <button className="dark-toggle" onClick={toggleDark}>
+                {dark ? "🌚" : "🌝"}
               </button>
+            </header>
+
+            <div className="container">
+              
+              {/* ---------- TABLE ---------- */}
+              <div className="table-wrapper">
+                <table className="fuel-table">
+                  <thead>
+                    <tr>
+                      <th>RON</th>
+                      <th>Pertamina</th>
+                      <th>BP</th>
+                      <th>Shell</th>
+                      <th>Vivo</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {RON_LIST.map((ron) => (
+                      <tr key={ron}>
+                        <td className="ron-cell">RON {ron}</td>
+
+                        {/* Pertamina */}
+                        <td>{renderCell(`pertamina_${ron}`, preds, confs, current)}</td>
+
+                        {/* BP */}
+                        <td>
+                          {["92", "95"].includes(ron)
+                            ? renderCell(`bp_${ron}`, preds, confs, current)
+                            : "-"}
+                        </td>
+
+                        {/* Shell */}
+                        <td>
+                          {ron === "90"
+                            ? "-"
+                            : renderCell(`shell_${ron}`, preds, confs, current)}
+                        </td>
+
+                        {/* Vivo */}
+                        <td>
+                          {ron === "98"
+                            ? "-"
+                            : renderCell(`vivo_${ron}`, preds, confs, current)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ---------- GRAPH ---------- */}
+              {/* ---------- SHOW MORE DATA SECTION ---------- */}
+              {!showMore && (
+                <div style={{ textAlign: "center", marginTop: 40 }}>
+                  <button
+                    onClick={() => setShowMore(true)}
+                    style={{
+                      padding: "12px 24px",
+                      borderRadius: 8,
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      color: "var(--text)",
+                      cursor: "pointer",
+                      fontSize: 16,
+                    }}
+                  >
+                    show more
+                  </button>
+                </div>
+              )}
+
+              {showMore && (
+                <>
+                  <LineGraph history={history} />
+
+                  <div style={{ width: "75%", margin: "40px auto" }}>
+                    <CorrelationHeatmap history={history} />
+                  </div>
+
+                  {/* ---------- SHOW LESS BUTTON ---------- */}
+                  <div style={{ textAlign: "center", marginTop: 20 }}>
+                    <button
+                      onClick={() => setShowMore(false)}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: 8,
+                        border: "1px solid var(--border)",
+                        background: "var(--card)",
+                        color: "var(--text)",
+                        cursor: "pointer",
+                        fontSize: 14,
+                      }}
+                    >
+                      show less
+                    </button>
+                  </div>
+                </>
+              )}
+
+              <p className="updated">
+                last updated: {new Date(row.created_at).toLocaleString()}
+              </p>
+
+              <p className="visits">
+                👥 total visitors: {Number(visits ?? 0).toLocaleString()}
+              </p>
+
+              <p className="updated" style={{marginTop: 20, marginBottom: 20}}>
+                by Audi Armadhani | 2026
+              </p>
+
+              <div className="footer-icons">
+                <a
+                  href="https://github.com/YOUR_GITHUB"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 16 16"
+                    fill="var(--text)"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="footer-icon"
+                  >
+                    <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38
+                    0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+                    -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+                    0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.56 7.56 0 018 3.87c.68 0
+                    1.36.09 2 .26 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15
+                    0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+                    0 .21.15.46.55.38A8.001 8.001 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                  </svg>
+                </a>
+
+                <a
+                  href="https://www.linkedin.com/in/YOUR_LINKEDIN"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="var(--text)"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="footer-icon"
+                  >
+                    <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7 0h3.8v2.16h.05C12.37 8.58 14.33 7.5 16.75 7.5 22.02 7.5 23 10.97 23 15.7V24h-4v-7.2c0-1.72-.03-3.94-2.4-3.94-2.4 0-2.77 1.87-2.77 3.8V24h-4V8z"/>
+                  </svg>
+                </a>
+              </div>
+
             </div>
-          </>
-        )}
 
-        <p className="updated">
-          last updated: {new Date(row.created_at).toLocaleString()}
-        </p>
-
-        <p className="visits">
-          👥 total visitors: {Number(visits ?? 0).toLocaleString()}
-        </p>
-
-        <p className="updated" style={{marginTop: 20, marginBottom: 20}}>
-          by Audi Armadhani | 2026
-        </p>
-
-        <div className="footer-icons">
-          <a
-            href="https://github.com/YOUR_GITHUB"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 16 16"
-              fill="var(--text)"
-              xmlns="http://www.w3.org/2000/svg"
-              className="footer-icon"
-            >
-              <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38
-              0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
-              -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
-              0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.56 7.56 0 018 3.87c.68 0
-              1.36.09 2 .26 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15
-              0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
-              0 .21.15.46.55.38A8.001 8.001 0 0016 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-          </a>
-
-          <a
-            href="https://www.linkedin.com/in/YOUR_LINKEDIN"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="var(--text)"
-              xmlns="http://www.w3.org/2000/svg"
-              className="footer-icon"
-            >
-              <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7 0h3.8v2.16h.05C12.37 8.58 14.33 7.5 16.75 7.5 22.02 7.5 23 10.97 23 15.7V24h-4v-7.2c0-1.72-.03-3.94-2.4-3.94-2.4 0-2.77 1.87-2.77 3.8V24h-4V8z"/>
-            </svg>
-          </a>
-        </div>
-
-      </div>
-
-      {GLOBAL_CSS}
-    </main>
+            {GLOBAL_CSS}
+          </main>
+        </>
+      )}
+    </div>
   );
 }
 
