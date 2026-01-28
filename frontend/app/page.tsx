@@ -30,8 +30,6 @@ const BRAND_LABELS: Record<string, string> = {
 
 const RON_LIST = ["90", "92", "95", "98"];
 
-const [showMore, setShowMore] = useState(false);
-
 /* ------------------ MAIN COMPONENT ------------------ */
 
 export default function Home() {
@@ -39,6 +37,8 @@ export default function Home() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dark, setDark] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+
 
   /* ---------- INIT DARK MODE ---------- */
   useEffect(() => {
@@ -96,8 +96,8 @@ useEffect(() => {
       {/* ---------- HEADER ---------- */}
       <header className="header">
         <div>
-          <div className="header-title">Prediksi Bensin</div>
-          <div className="header-sub">Not Financial Advice. DYOR.</div>
+          <div className="header-title">prediksi bensin</div>
+          <div className="header-sub">not financial advice. DYOR.</div>
         </div>
 
         <button className="dark-toggle" onClick={toggleDark}>
@@ -170,7 +170,7 @@ useEffect(() => {
                 fontSize: 16,
               }}
             >
-              Show More Data
+              show more
             </button>
           </div>
         )}
@@ -178,12 +178,13 @@ useEffect(() => {
         {showMore && (
           <>
             <LineGraph history={history} />
+
             <CorrelationHeatmap history={history} />
           </>
         )}
 
         <p className="updated">
-          Last Updated: {new Date(row.created_at).toLocaleString()}
+          last updated: {new Date(row.created_at).toLocaleString()}
         </p>
       </div>
 
