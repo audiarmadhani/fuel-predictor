@@ -206,61 +206,50 @@ useEffect(() => {
         <p className="updated">
           last updated: {new Date(row.created_at).toLocaleString()}
         </p>
+
+        <div className="footer-icons">
+          <a
+            href="https://github.com/YOUR_GITHUB"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 16 16"
+              fill="var(--text)"
+              xmlns="http://www.w3.org/2000/svg"
+              className="footer-icon"
+            >
+              <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38
+              0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+              -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+              0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.56 7.56 0 018 3.87c.68 0
+              1.36.09 2 .26 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15
+              0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+              0 .21.15.46.55.38A8.001 8.001 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+          </a>
+
+          <a
+            href="https://www.linkedin.com/in/YOUR_LINKEDIN"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="var(--text)"
+              xmlns="http://www.w3.org/2000/svg"
+              className="footer-icon"
+            >
+              <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7 0h3.8v2.16h.05C12.37 8.58 14.33 7.5 16.75 7.5 22.02 7.5 23 10.97 23 15.7V24h-4v-7.2c0-1.72-.03-3.94-2.4-3.94-2.4 0-2.77 1.87-2.77 3.8V24h-4V8z"/>
+            </svg>
+          </a>
+        </div>
+
       </div>
-
-      {/* ---------- FOOTER ---------- */}
-      <footer
-        style={{
-          marginTop: 60,
-          padding: "20px 0",
-          textAlign: "center",
-          opacity: 0.7,
-        }}
-      >
-        <a
-          href="https://github.com/audiarmadhani"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ margin: "0 14px" }}
-        >
-          {/* GitHub Icon */}
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 16 16"
-            fill="var(--text)"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ cursor: "pointer" }}
-          >
-            <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38
-            0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
-            -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
-            0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.56 7.56 0 018 3.87c.68 0
-            1.36.09 2 .26 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15
-            0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
-            0 .21.15.46.55.38A8.001 8.001 0 0016 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-        </a>
-
-        <a
-          href="https://www.linkedin.com/in/audiarmadhani/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ margin: "0 14px" }}
-        >
-          {/* LinkedIn Icon */}
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="var(--text)"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ cursor: "pointer" }}
-          >
-            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V24h-4V8zm7 0h3.8v2.16h.05C12.37 8.58 14.33 7.5 16.75 7.5 22.02 7.5 23 10.97 23 15.7V24h-4v-7.2c0-1.72-.03-3.94-2.4-3.94-2.4 0-2.77 1.87-2.77 3.8V24h-4V8z"/>
-          </svg>
-        </a>
-      </footer>
 
       {GLOBAL_CSS}
     </main>
@@ -423,6 +412,22 @@ const GLOBAL_CSS = (
       margin-top: 40px;
       text-align: center;
       color: var(--text2);
+    }
+
+    .footer-icons {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .footer-icon {
+      margin: 0 14px;
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .footer-icon:hover {
+      opacity: 0.7;
+      transform: scale(1.08);
     }
 
     @media (max-width: 768px) {
