@@ -5,6 +5,8 @@ from api.healthcheck import router as health_router
 from api.latest_prediction import router as latest_router
 from api.predict_endpoint import router as predict_router
 
+from api.history import router as history_router
+
 app = FastAPI(
     title="Fuel Predictor API",
     description="API for monthly fuel price predictions",
@@ -29,3 +31,5 @@ app.include_router(predict_router, prefix="/predict")
 @app.get("/")
 def root():
     return {"message": "Fuel Predictor API is running"}
+
+app.include_router(history_router, prefix="/api")

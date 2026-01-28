@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
 const BRAND_LABELS: Record<string, string> = {
   pertamina_90: "Pertalite",
   pertamina_92: "Pertamax",
@@ -22,6 +32,13 @@ const BRAND_LABELS: Record<string, string> = {
 };
 
 const RON_LIST = ["90", "92", "95", "98"];
+
+const [history, setHistory] = useState<any[]>([]);
+
+// Load historical CSV via backend API
+const histRes = await fetch("https://fuel-predictor-backend-rf1e.onrender.com");
+const histJson = await histRes.json();
+setHistory(histJson.rows || []);
 
 export default function Home() {
   const [row, setRow] = useState<any>(null);
@@ -123,6 +140,9 @@ export default function Home() {
             </tbody>
           </table>
         </div>
+
+        {/* GRAPH SECTION */}
+        <RonGraph history={history} />
 
         <p className="updated">
           Last Updated: {new Date(row.created_at).toLocaleString()}
@@ -294,6 +314,101 @@ function renderCell(key: string, preds: any, confs: any, current: any) {
       <div style={{ fontSize: 9, color: "var(--text3)" }}>
         Confidence: {conf}%
       </div>
+    </div>
+  );
+}
+
+function RonGraph({ history }: { history: any[] }) {
+  const [ron, setRon] = useState("92");
+
+  if (!history || history.length === 0) return null;
+
+  // ----- Make a normalized dataset -----
+  const processed = history.map((row) => {
+    const price = row[`pertamina_${ron}`] || row[`vivo_${ron}`] || 0;
+
+    const nums = {
+      price,
+      brent: row.brent,
+      rbob: row.rbob,
+      usd: row.usd_idr,
+      mops: row.base_mops,
+    };
+
+    // normalization per row using min-max
+    const values = Object.values(nums).filter((x) => x !== null);
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+
+    const scale = (v: number) =>
+      maxVal === minVal ? 0 : (v - minVal) / (maxVal - minVal);
+
+    return {
+      month: row.month,
+      price_norm: scale(nums.price),
+      brent_norm: scale(nums.brent),
+      rbob_norm: scale(nums.rbob),
+      usd_norm: scale(nums.usd),
+      mops_norm: scale(nums.mops),
+      // raw numbers for tooltip
+      price_raw: nums.price,
+      brent_raw: nums.brent,
+      rbob_raw: nums.rbob,
+      usd_raw: nums.usd,
+      mops_raw: nums.mops,
+    };
+  });
+
+  return (
+    <div style={{ marginTop: 60 }}>
+      <h2 style={{ textAlign: "center" }}>
+        Grafik Hubungan Harga RON {ron}
+      </h2>
+
+      {/* RON selector */}
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <select
+          value={ron}
+          onChange={(e) => setRon(e.target.value)}
+          style={{
+            padding: 8,
+            borderRadius: 6,
+            border: "1px solid var(--border)",
+            background: "var(--card)",
+            color: "var(--text)",
+          }}
+        >
+          <option value="90">RON 90</option>
+          <option value="92">RON 92</option>
+          <option value="95">RON 95</option>
+          <option value="98">RON 98</option>
+        </select>
+      </div>
+
+      <ResponsiveContainer width="100%" height={350}>
+        <LineChart data={processed}>
+          <XAxis dataKey="month" stroke="var(--text2)" />
+          <YAxis stroke="var(--text2)" domain={[0, 1]} />
+          <Tooltip
+            formatter={(value: any, name?: string) => {
+              return [value, name ?? ""];
+            }}
+          />
+          <Legend />
+
+          <Line
+            type="monotone"
+            dataKey="price_norm"
+            name={`Harga RON ${ron}`}
+            stroke="#ff5722"
+            strokeWidth={2}
+          />
+          <Line type="monotone" dataKey="brent_norm" name="Brent" stroke="#2196f3" />
+          <Line type="monotone" dataKey="rbob_norm" name="RBOB" stroke="#9c27b0" />
+          <Line type="monotone" dataKey="usd_norm" name="USD/IDR" stroke="#4caf50" />
+          <Line type="monotone" dataKey="mops_norm" name="Base MOPS" stroke="#ffc107" />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
