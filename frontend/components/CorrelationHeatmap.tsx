@@ -143,7 +143,7 @@ export default function CorrelationHeatmap({ history }: { history: any[] }) {
   return (
     <div style={{ marginTop: 60 }}>
       <h2 style={{ textAlign: "center", marginBottom: 20 }}>
-        Korelasi Harga Bensin vs Komoditas Global
+        korelasi harga bensin dengan komoditas global
       </h2>
 
       <div className="heatmap-grid">

@@ -109,7 +109,7 @@ export default function LineGraph({ history }: { history: any[] }) {
   return (
     <div style={{ marginTop: 60 }}>
       <h2 style={{ textAlign: "center", marginBottom: 16 }}>
-        Grafik Hubungan Harga RON {ron}
+        grafik hubungan harga RON {ron} dengan komoditas global
       </h2>
 
       {/* RON + SMOOTH SELECT */}
@@ -136,10 +136,10 @@ export default function LineGraph({ history }: { history: any[] }) {
             background: "var(--card)", color: "var(--text)",
           }}
         >
-          <option value={0}>Linear</option>
-          <option value={1}>Smooth</option>
-          <option value={2}>Very Smooth</option>
-          <option value={3}>Bezier</option>
+          <option value={0}>linear</option>
+          <option value={1}>smooth</option>
+          <option value={2}>very smooth</option>
+          <option value={3}>bezier</option>
         </select>
       </div>
 

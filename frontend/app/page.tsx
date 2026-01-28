@@ -179,7 +179,9 @@ useEffect(() => {
           <>
             <LineGraph history={history} />
 
-            <CorrelationHeatmap history={history} />
+            <div className="graph-wrapper" style={{ width: "75%", margin: "40px auto" }}>
+              <CorrelationHeatmap history={history} />
+            </div>
           </>
         )}
 
