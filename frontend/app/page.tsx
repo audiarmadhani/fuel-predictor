@@ -125,7 +125,7 @@ export default function Home() {
         </div>
 
         <p className="updated">
-          Updated: {new Date(row.created_at).toLocaleString()}
+          Last Updated: {new Date(row.created_at).toLocaleString()}
         </p>
       </div>
 
