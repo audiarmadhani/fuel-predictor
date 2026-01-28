@@ -88,7 +88,7 @@ export default function Home() {
           color: "var(--text)",
         }}
       >
-        {dark ? "🌞" : "🌙"}
+        {dark ? "🌝" : "🌚"}
       </button>
 
       <div style={{ width: "100%", maxWidth: "1200px" }}>
