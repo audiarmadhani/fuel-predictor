@@ -4,30 +4,34 @@ from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
 
-MERGED_CANDIDATES = [
-    "data/processed/merged_dataset.csv",
-    "data/processed/merged_data_clean.csv",
-]
-
 @router.get("/history")
 def get_history():
-    """Returns merged dataset as JSON."""
     try:
-        path = None
-        for p in MERGED_CANDIDATES:
-            if os.path.exists(p):
-                path = p
-                break
+        # Absolute directory for data/processed (inside backend)
+        base = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "data", "processed")
+        )
+
+        print("LOOKING IN:", base)
+        print("FILES:", os.listdir(base))
+
+        paths = [
+            os.path.join(base, "merged_dataset.csv"),
+        ]
+
+        path = next((p for p in paths if os.path.exists(p)), None)
 
         if not path:
-            raise FileNotFoundError("No merged dataset found in data/processed")
+            raise FileNotFoundError(f"NO merged dataset found in: {paths}")
+
+        print("USING:", path)
 
         df = pd.read_csv(path)
-
         if "month" in df.columns:
             df["month"] = df["month"].astype(str)
 
         return {"status": "ok", "rows": df.to_dict(orient="records")}
 
     except Exception as e:
+        print("HISTORY ERROR:", e)
         raise HTTPException(status_code=500, detail=str(e))
