@@ -179,8 +179,26 @@ useEffect(() => {
           <>
             <LineGraph history={history} />
 
-            <div className="graph-wrapper" style={{ width: "75%", margin: "40px auto" }}>
+            <div style={{ width: "75%", margin: "40px auto" }}>
               <CorrelationHeatmap history={history} />
+            </div>
+
+            {/* ---------- SHOW LESS BUTTON ---------- */}
+            <div style={{ textAlign: "center", marginTop: 20 }}>
+              <button
+                onClick={() => setShowMore(false)}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "var(--card)",
+                  color: "var(--text)",
+                  cursor: "pointer",
+                  fontSize: 14,
+                }}
+              >
+                show less
+              </button>
             </div>
           </>
         )}
