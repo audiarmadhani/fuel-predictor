@@ -105,9 +105,13 @@ export default function Home() {
   }
 
   useEffect(() => {
+    const fp = crypto.randomUUID(); // or actual fingerprint later
+
     fetch("https://fuel-predictor-backend-rf1e.onrender.com/api/track", {
       method: "POST",
-    });
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fp }),
+    }).catch(() => {});
   }, []);
 
   /* ------------------ PAGE RENDER ------------------ */
