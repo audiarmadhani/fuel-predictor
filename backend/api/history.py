@@ -1,25 +1,33 @@
+import os
 import pandas as pd
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
 
+MERGED_CANDIDATES = [
+    "data/processed/merged_dataset.csv",
+    "data/processed/merged_data_clean.csv",
+]
+
 @router.get("/history")
 def get_history():
-    """
-    Returns merged_dataset.csv as JSON.
-    Used by frontend to draw charts.
-    """
+    """Returns merged dataset as JSON."""
     try:
-        df = pd.read_csv("data/processed/merged_data_clean.csv")
+        path = None
+        for p in MERGED_CANDIDATES:
+            if os.path.exists(p):
+                path = p
+                break
 
-        # Convert month to string (YYYY-MM)
+        if not path:
+            raise FileNotFoundError("No merged dataset found in data/processed")
+
+        df = pd.read_csv(path)
+
         if "month" in df.columns:
             df["month"] = df["month"].astype(str)
 
-        return {
-            "status": "ok",
-            "rows": df.to_dict(orient="records")
-        }
+        return {"status": "ok", "rows": df.to_dict(orient="records")}
 
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))

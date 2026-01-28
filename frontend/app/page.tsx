@@ -74,18 +74,18 @@ export default function Home() {
     })();
   }, []);
 
-  /* ---------- LOAD HISTORICAL DATA FROM BACKEND ---------- */
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("https://fuel-predictor-backend-rf1e.onrender.com");
-        const json = await res.json();
-        setHistory(json.rows || []);
-      } catch (err) {
-        console.error("History fetch failed:", err);
-      }
-    })();
-  }, []);
+/* ---------- LOAD HISTORICAL DATA ---------- */
+useEffect(() => {
+  (async () => {
+    try {
+      const res = await fetch("https://fuel-predictor-backend-rf1e.onrender.com/history");
+      const json = await res.json();
+      setHistory(json.rows || []);
+    } catch (err) {
+      console.error("History fetch failed:", err);
+    }
+  })();
+}, []);
 
   if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
   if (!row) return <div style={{ padding: 40 }}>No predictions yet</div>;
