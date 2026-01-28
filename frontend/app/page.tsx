@@ -88,7 +88,7 @@ export default function Home() {
           color: "var(--text)",
         }}
       >
-        {dark ? "🌝" : "🌚"}
+        {dark ? "🌚" : "🌝"}
       </button>
 
       <div style={{ width: "100%", maxWidth: "1200px" }}>
@@ -106,7 +106,7 @@ export default function Home() {
 
         <div className="table-wrapper"
           style={{
-            width: "80%",
+            width: "90%",
             margin: "0 auto",
             overflowX: "auto",
           }}
@@ -207,7 +207,7 @@ export default function Home() {
         @media (max-width: 768px) {
           .table-wrapper {
             width: 100% !important;
-            padding: 0 12px;
+            padding: 0 6px;
           }
         }
       `}</style>
