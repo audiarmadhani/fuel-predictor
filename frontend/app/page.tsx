@@ -28,7 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [dark, setDark] = useState(false);
 
-  /* ---------- INIT DARK MODE ---------- */
+  /* INIT DARK MODE */
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
     const isDark = saved === "true";
@@ -43,7 +43,7 @@ export default function Home() {
     localStorage.setItem("darkMode", next.toString());
   };
 
-  /* ---------- LOAD DATA ---------- */
+  /* LOAD DATA */
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -65,89 +65,47 @@ export default function Home() {
   const current = row.current_prices;
 
   return (
-    <main
-      style={{
-        padding: 40,
-        fontFamily: "sans-serif",
-        display: "flex",
-        justifyContent: "center",
-        position: "relative",
-      }}
-    >
+    <main className="page">
       {/* DARK MODE TOGGLE */}
-      <button
-        onClick={toggleDark}
-        style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          fontSize: 26,
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "var(--text)",
-        }}
-      >
+      <button className="dark-toggle" onClick={toggleDark}>
         {dark ? "🌚" : "🌝"}
       </button>
 
-      <div style={{ width: "100%", maxWidth: "1200px" }}>
-        <h1
-          style={{
-            textAlign: "center",
-            marginBottom: 30,
-            fontSize: 36,
-            fontWeight: 700,
-            color: "var(--text)",
-          }}
-        >
-          Prediksi Harga Bensin
-        </h1>
+      <div className="container">
+        <h1 className="title">Prediksi Harga Bensin</h1>
 
-        <div className="table-wrapper"
-          style={{
-            width: "90%",
-            margin: "0 auto",
-            overflowX: "auto",
-          }}
-        >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              background: "var(--card)",
-            }}
-          >
+        <div className="table-wrapper">
+          <table className="fuel-table">
             <thead>
               <tr>
-                <th style={thStyle}>RON</th>
-                <th style={thStyle}>Pertamina</th>
-                <th style={thStyle}>BP</th>
-                <th style={thStyle}>Shell</th>
-                <th style={thStyle}>Vivo</th>
+                <th>RON</th>
+                <th>Pertamina</th>
+                <th>BP</th>
+                <th>Shell</th>
+                <th>Vivo</th>
               </tr>
             </thead>
 
             <tbody>
               {RON_LIST.map((ron) => (
                 <tr key={ron}>
-                  <td style={ronCellStyle}>RON {ron}</td>
+                  <td className="ron-cell">RON {ron}</td>
 
-                  <td style={tdStyle}>{renderCell(`pertamina_${ron}`, preds, confs, current)}</td>
+                  <td>{renderCell(`pertamina_${ron}`, preds, confs, current)}</td>
 
-                  <td style={tdStyle}>
+                  <td>
                     {["92", "95"].includes(ron)
                       ? renderCell(`bp_${ron}`, preds, confs, current)
                       : "-"}
                   </td>
 
-                  <td style={tdStyle}>
+                  <td>
                     {ron === "90"
                       ? "-"
                       : renderCell(`shell_${ron}`, preds, confs, current)}
                   </td>
 
-                  <td style={tdStyle}>
+                  <td>
                     {ron === "98"
                       ? "-"
                       : renderCell(`vivo_${ron}`, preds, confs, current)}
@@ -158,29 +116,29 @@ export default function Home() {
           </table>
         </div>
 
-        <p style={{ marginTop: 40, textAlign: "center", color: "var(--text2)" }}>
+        <p className="updated">
           Updated: {new Date(row.created_at).toLocaleString()}
         </p>
       </div>
 
-      {/* ---------- GLOBAL CSS ---------- */}
+      {/* GLOBAL CSS */}
       <style>{`
         :root {
-          --bg: #f8f8f8;
+          --bg: #f7f7f7;
           --text: #222;
           --text2: #555;
-          --text3: #777;
+          --text3: #888;
           --card: #ffffff;
-          --th-bg: #e6e6e6;
+          --th-bg: #e8e8e8;
           --border: #cccccc;
         }
 
         body.dark {
-          --bg: #111;
-          --text: #eee;
+          --bg: #0d0d0d;
+          --text: #f2f2f2;
           --text2: #ccc;
           --text3: #999;
-          --card: #1d1d1d;
+          --card: #1a1a1a;
           --th-bg: #333;
           --border: #444;
         }
@@ -188,25 +146,95 @@ export default function Home() {
         body {
           background: var(--bg);
           color: var(--text);
-          transition: background 0.3s, color 0.3s;
+          margin: 0;
+          transition: 0.25s ease;
         }
 
-        table {
+        .page {
+          padding: 40px;
+          display: flex;
+          justify-content: center;
+          position: relative;
+          font-family: sans-serif;
+        }
+
+        .dark-toggle {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          font-size: 28px;
+          background: none;
+          border: none;
+          cursor: pointer;
           color: var(--text);
+        }
+
+        .container {
+          width: 100%;
+          max-width: 1200px;
+        }
+
+        .title {
+          text-align: center;
+          font-size: 36px;
+          font-weight: 700;
+          margin-bottom: 30px;
+          color: var(--text);
+        }
+
+        .table-wrapper {
+          width: 90%;
+          margin: 0 auto;
+          overflow-x: auto;
+        }
+
+        .fuel-table {
+          width: 100%;
+          border-collapse: collapse;
+          background: var(--card);
           border: 1px solid var(--border);
         }
 
         th {
+          padding: 12px 10px;
+          background: var(--th-bg);
           border-bottom: 2px solid var(--border);
+          color: var(--text);
         }
 
         td {
+          padding: 14px 10px;
+          text-align: center;
           border-bottom: 1px solid var(--border);
         }
 
+        .ron-cell {
+          font-weight: 700;
+        }
+
+        .updated {
+          margin-top: 40px;
+          text-align: center;
+          color: var(--text2);
+        }
+
+        /* MOBILE FIXES */
         @media (max-width: 768px) {
+          .page {
+            padding: 0 !important;
+          }
+          .container {
+            max-width: 100%;
+            padding: 0;
+          }
           .table-wrapper {
             width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .fuel-table {
+            border-left: 0;
+            border-right: 0;
           }
         }
       `}</style>
@@ -214,7 +242,7 @@ export default function Home() {
   );
 }
 
-/* ---------- CELL RENDERING ---------- */
+/* ---------- RENDER CELL ---------- */
 function renderCell(
   key: string,
   preds: any,
@@ -238,13 +266,8 @@ function renderCell(
   let diffColor = "var(--text3)";
 
   if (curr !== null) {
-    if (midpoint > curr) {
-      diffSymbol = "▲";
-      diffColor = "green";
-    } else if (midpoint < curr) {
-      diffSymbol = "▼";
-      diffColor = "red";
-    }
+    if (midpoint > curr) diffSymbol = "▲", diffColor = "green";
+    else if (midpoint < curr) diffSymbol = "▼", diffColor = "red";
   }
 
   return (
@@ -254,9 +277,7 @@ function renderCell(
           ? low.toLocaleString("id-ID")
           : `${low.toLocaleString("id-ID")} – ${high.toLocaleString("id-ID")}`}
         {" "}
-        <span style={{ color: diffColor, fontSize: 14 }}>
-          {diffSymbol}
-        </span>
+        <span style={{ color: diffColor, fontSize: 14 }}>{diffSymbol}</span>
       </div>
 
       <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 2 }}>
@@ -275,21 +296,3 @@ function renderCell(
     </div>
   );
 }
-
-/* ---------- TABLE STYLES ---------- */
-const thStyle: React.CSSProperties = {
-  padding: "12px 10px",
-  background: "var(--th-bg)",
-  textAlign: "center",
-  color: "var(--text)",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "14px 10px",
-  textAlign: "center",
-};
-
-const ronCellStyle: React.CSSProperties = {
-  ...tdStyle,
-  fontWeight: 700,
-};
