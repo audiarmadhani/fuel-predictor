@@ -207,6 +207,10 @@ useEffect(() => {
           last updated: {new Date(row.created_at).toLocaleString()}
         </p>
 
+        <p className="updated" style={{marginTop: 20, marginBottom: 20}}>
+          by Audi Armadhani | 2026
+        </p>
+
         <div className="footer-icons">
           <a
             href="https://github.com/YOUR_GITHUB"
