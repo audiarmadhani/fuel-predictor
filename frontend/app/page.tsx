@@ -94,9 +94,15 @@ export default function Home() {
     })();
   }, []);
 
-    const preds = row.model;
-    const confs = row.confidence;
-    const current = row.current_prices;
+  let preds = {};
+  let confs = {};
+  let current = {};
+
+  if (row) {
+    preds = row.model;
+    confs = row.confidence;
+    current = row.current_prices;
+  }
 
   useEffect(() => {
     fetch("https://fuel-predictor-backend-rf1e.onrender.com/api/track", {
