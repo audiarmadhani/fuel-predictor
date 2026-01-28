@@ -26,7 +26,24 @@ const RON_LIST = ["90", "92", "95", "98"];
 export default function Home() {
   const [row, setRow] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [dark, setDark] = useState(false);
 
+  /* ---------- LOAD DARK MODE ---------- */
+  useEffect(() => {
+    const saved = localStorage.getItem("darkMode");
+    const isDark = saved === "true";
+    setDark(isDark);
+    document.body.classList.toggle("dark", isDark);
+  }, []);
+
+  function toggleDark() {
+    const next = !dark;
+    setDark(next);
+    document.body.classList.toggle("dark", next);
+    localStorage.setItem("darkMode", next.toString());
+  }
+
+  /* ---------- LOAD DATA ---------- */
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -54,21 +71,38 @@ export default function Home() {
         fontFamily: "sans-serif",
         display: "flex",
         justifyContent: "center",
+        position: "relative",
       }}
     >
+      {/* Dark/Light Toggle */}
+      <button
+        onClick={toggleDark}
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          fontSize: 26,
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        {dark ? "🌞" : "🌙"}
+      </button>
+
       <div style={{ width: "100%", maxWidth: "1200px" }}>
         <h1
           style={{
             textAlign: "center",
-            marginBottom: 40,
-            fontSize: "48px",
+            marginBottom: 30,
+            fontSize: 36,
             fontWeight: 700,
           }}
         >
           Prediksi Harga Bensin
         </h1>
 
-        <div
+        <div className="table-wrapper"
           style={{
             width: "80%",
             margin: "0 auto",
@@ -96,26 +130,20 @@ export default function Home() {
                 <tr key={ron}>
                   <td style={ronCellStyle}>RON {ron}</td>
 
-                  {/* Pertamina */}
-                  <td style={tdStyle}>
-                    {renderCell(`pertamina_${ron}`, preds, confs, current)}
-                  </td>
+                  <td style={tdStyle}>{renderCell(`pertamina_${ron}`, preds, confs, current)}</td>
 
-                  {/* BP */}
                   <td style={tdStyle}>
                     {["92", "95"].includes(ron)
                       ? renderCell(`bp_${ron}`, preds, confs, current)
                       : "-"}
                   </td>
 
-                  {/* Shell */}
                   <td style={tdStyle}>
                     {ron === "90"
                       ? "-"
                       : renderCell(`shell_${ron}`, preds, confs, current)}
                   </td>
 
-                  {/* Vivo */}
                   <td style={tdStyle}>
                     {ron === "98"
                       ? "-"
@@ -127,86 +155,85 @@ export default function Home() {
           </table>
         </div>
 
-        <p style={{ marginTop: 40, textAlign: "center", color: "#777" }}>
+        <p style={{ marginTop: 40, textAlign: "center", color: "var(--text2)" }}>
           Updated: {new Date(row.created_at).toLocaleString()}
         </p>
-        <p style={{ marginTop: 10, textAlign: "center", color: "#777" }}>
-          by Audi Armadhani
-        </p>
       </div>
+
+      {/* MOBILE CSS */}
+      <style>{`
+        @media (max-width: 768px) {
+          .table-wrapper {
+            width: 100% !important;
+            padding: 0 12px;
+          }
+        }
+        body.dark {
+          background: #111;
+          color: #eee;
+        }
+        body.dark table {
+          color: #eee;
+        }
+      `}</style>
     </main>
   );
 }
 
-/** Renders each cell with:
- * - Predicted price
- * - Fuel name
- * - Confidence
- * - Price comparison (▲ ▼ ●)
- */
-function renderCell(
-  key: string,
-  preds: any,
-  confs: any,
-  current: any
-) {
+/* ---------- Render Cell (with range) ---------- */
+function renderCell(key: string, preds: any, confs: any, current: any) {
   if (!preds[key]) return "-";
 
-  const predicted = Math.round(preds[key] / 10) * 10;
-  const curr = current?.[key] ? Math.round(current[key] / 10) * 10 : null;
-  const conf = Math.round(confs[key]);
+  let predicted = preds[key];
 
-  let diffSymbol = "●";
-  let diffColor = "#888";
-
-  if (curr !== null) {
-    if (predicted > curr) {
-      diffSymbol = "▲";
-      diffColor = "green";
-    } else if (predicted < curr) {
-      diffSymbol = "▼";
-      diffColor = "red";
-    }
+  // Lock Pertalite at 10.000
+  if (key === "pertamina_90") {
+    predicted = 10000;
   }
+
+  // PRICE RANGE CALC
+  const low = Math.floor(predicted / 100) * 100;
+  const high = Math.ceil(predicted / 100) * 100;
+
+  const conf = Math.round(confs[key]);
+  const curr = current?.[key] || null;
 
   return (
     <div>
       <div style={{ fontSize: 20, fontWeight: 600 }}>
-        {predicted.toLocaleString("id-ID")}
-        {"  "}
-        <span style={{ color: diffColor, fontSize: 14 }}>{diffSymbol}</span>
+        {low.toLocaleString("id-ID")} – {high.toLocaleString("id-ID")}
       </div>
 
       {curr !== null && (
-        <div style={{ fontSize: 12, color: "#777" }}>
+        <div style={{ fontSize: 12, color: "var(--text2)" }}>
           Current: {curr.toLocaleString("id-ID")}
         </div>
       )}
 
-      <div style={{ fontSize: 12, color: "#777", marginTop: 2 }}>
+      <div style={{ fontSize: 12, color: "var(--text2)", marginTop: 2 }}>
         {BRAND_LABELS[key] || key}
       </div>
 
-      <div style={{ fontSize: 11, color: "#aaa" }}>
+      <div style={{ fontSize: 11, color: "var(--text3)" }}>
         Confidence: {conf}%
       </div>
     </div>
   );
 }
 
-/** ---------- Styles ---------- **/
-
+/* ---------- Styles ---------- */
 const thStyle: React.CSSProperties = {
   padding: "12px 10px",
-  borderBottom: "2px solid #ddd",
-  background: "#3a3a3aff",
+  borderBottom: "2px solid #444",
+  background: "var(--th-bg)",
   textAlign: "center",
+  color: "white",
 };
 
 const tdStyle: React.CSSProperties = {
   padding: "14px 10px",
   textAlign: "center",
-  borderBottom: "1px solid #eee",
+  borderBottom: "1px solid #333",
 };
 
 const ronCellStyle: React.CSSProperties = {
