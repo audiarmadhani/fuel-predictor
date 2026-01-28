@@ -78,7 +78,7 @@ export default function Home() {
 useEffect(() => {
   (async () => {
     try {
-      const res = await fetch("https://fuel-predictor-backend-rf1e.onrender.com/history");
+      const res = await fetch("https://fuel-predictor-backend-rf1e.onrender.com/api/history");
       const json = await res.json();
       setHistory(json.rows || []);
     } catch (err) {

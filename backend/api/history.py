@@ -13,28 +13,31 @@ def get_history():
 
         paths = [
             os.path.join(base, "merged_dataset.csv"),
-            # os.path.join(base, "merged_data_clean.csv"),
+            os.path.join(base, "merged_data_clean.csv"),
         ]
 
         path = next((p for p in paths if os.path.exists(p)), None)
         if not path:
-            raise FileNotFoundError(f"Dataset missing: {paths}")
+            raise FileNotFoundError("No dataset found")
 
         df = pd.read_csv(path)
 
-        # Convert month to string
+        # convert "month" to string
         if "month" in df.columns:
             df["month"] = df["month"].astype(str)
 
-        # 🚀 FIX: Replace NaN, inf, -inf with None (JSON safe)
-        df = df.replace([float("inf"), float("-inf")], None)
-        df = df.where(pd.notnull(df), None)
+        # 🔥 CRITICAL FIX: force pandas to treat all numbers as Python objects
+        df = df.astype(object)
 
-        return {
-            "status": "ok",
-            "rows": df.to_dict(orient="records")
-        }
+        # Replace all nan/inf values
+        df = df.where(pd.notnull(df), None)
+        df = df.replace([float("inf"), float("-inf")], None)
+
+        # Now convert to pure Python objects
+        data = df.to_dict(orient="records")
+
+        return {"status": "ok", "rows": data}
 
     except Exception as e:
-        print("[HISTORY ERROR]", e)
+        print("HISTORY ERROR:", e)
         raise HTTPException(status_code=500, detail=str(e))
