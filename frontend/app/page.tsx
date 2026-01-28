@@ -223,59 +223,117 @@ function renderCell(key: string, preds: any, confs: any, current: any) {
 
 /* ------------------ GRAPH COMPONENT ------------------ */
 
+/* ------------------ GRAPH COMPONENT ------------------ */
+
 function RonGraph({ history }: { history: any[] }) {
   const [ron, setRon] = useState("92");
 
+  // Toggle buttons
+  const [visible, setVisible] = useState({
+    pertamina: true,
+    bp: true,
+    shell: true,
+    vivo: true,
+    brent: true,
+    rbob: true,
+    usd: true,
+    mops: true,
+  });
+
+  // smoothing level
+  const [smooth, setSmooth] = useState(1);
+
   if (!history || history.length === 0) return null;
 
-  // ---------- Build indexed values ----------
-  const firstRow = history[0];
+  const safe = (v: any) => (v == null || isNaN(v) ? null : Number(v));
 
+  /* ------------ BASELINES (first data row) ------------ */
+  const first = history[0];
+
+  const base = {
+    pertamina: safe(first[`pertamina_${ron}`]) ?? 1,
+    bp: safe(first[`bp_${ron}`]) ?? 1,
+    shell: safe(first[`shell_${ron}`]) ?? 1,
+    vivo: safe(first[`vivo_${ron}`]) ?? 1,
+    brent: safe(first.brent) ?? 1,
+    rbob: safe(first.rbob) ?? 1,
+    usd: safe(first.usd_idr) ?? 1,
+    mops: safe(first.base_mops) ?? 1,
+  };
+
+  /* ------------ INDEXED + RAW DATASET ------------ */
   const indexed = history.map((row) => {
-    const price_pertamina = row[`pertamina_${ron}`] ?? null;
-    const price_bp = row[`bp_${ron}`] ?? null;
-    const price_shell = row[`shell_${ron}`] ?? null;
-    const price_vivo = row[`vivo_${ron}`] ?? null;
-
-    const brent = row.brent;
-    const rbob = row.rbob;
-    const usd = row.usd_idr;
-    const mops = row.base_mops;
-
-    // first-row baselines
-    const base_pert = firstRow[`pertamina_${ron}`] ?? 1;
-    const base_bp = firstRow[`bp_${ron}`] ?? 1;
-    const base_shell = firstRow[`shell_${ron}`] ?? 1;
-    const base_vivo = firstRow[`vivo_${ron}`] ?? 1;
-
-    const base_brent = firstRow.brent ?? 1;
-    const base_rbob = firstRow.rbob ?? 1;
-    const base_usd = firstRow.usd_idr ?? 1;
-    const base_mops = firstRow.base_mops ?? 1;
+    const vals = {
+      pertamina_raw: safe(row[`pertamina_${ron}`]),
+      bp_raw: safe(row[`bp_${ron}`]),
+      shell_raw: safe(row[`shell_${ron}`]),
+      vivo_raw: safe(row[`vivo_${ron}`]),
+      brent_raw: safe(row.brent),
+      rbob_raw: safe(row.rbob),
+      usd_raw: safe(row.usd_idr),
+      mops_raw: safe(row.base_mops),
+    };
 
     return {
       month: row.month,
 
-      // --- Indexed fuel prices ---
-      pertamina_idx: price_pertamina ? price_pertamina / base_pert : null,
-      bp_idx: price_bp ? price_bp / base_bp : null,
-      shell_idx: price_shell ? price_shell / base_shell : null,
-      vivo_idx: price_vivo ? price_vivo / base_vivo : null,
+      // indexed values
+      pertamina_idx:
+        vals.pertamina_raw != null ? vals.pertamina_raw / base.pertamina : null,
+      bp_idx: vals.bp_raw != null ? vals.bp_raw / base.bp : null,
+      shell_idx: vals.shell_raw != null ? vals.shell_raw / base.shell : null,
+      vivo_idx: vals.vivo_raw != null ? vals.vivo_raw / base.vivo : null,
 
-      // --- Indexed exogenous variables ---
-      brent_idx: brent / base_brent,
-      rbob_idx: rbob / base_rbob,
-      usd_idx: usd / base_usd,
-      mops_idx: mops / base_mops,
+      brent_idx: vals.brent_raw != null ? vals.brent_raw / base.brent : null,
+      rbob_idx: vals.rbob_raw != null ? vals.rbob_raw / base.rbob : null,
+      usd_idx: vals.usd_raw != null ? vals.usd_raw / base.usd : null,
+      mops_idx: vals.mops_raw != null ? vals.mops_raw / base.mops : null,
+
+      // raw values used inside tooltip
+      ...vals,
     };
+  });
+
+  /* ------------ SMOOTHING CURVE ------------ */
+  const smoothingType =
+    smooth === 0
+      ? "linear"
+      : smooth === 1
+      ? "monotoneX"
+      : smooth === 2
+      ? "natural"
+      : "basis";
+
+  /* ------------ COLORS ------------ */
+  const colors = {
+    pertamina: "#e53935",
+    bp: "#00c853",
+    shell: "#ffeb3b",
+    vivo: "#2979ff",
+    brent: "#ff6d00",
+    rbob: "#8e24aa",
+    usd: "#43a047",
+    mops: "#ffa000",
+  };
+
+  /* ------------ TOGGLE BUTTON STYLE ------------ */
+  const toggleStyle = (active: boolean, color: string) => ({
+    padding: "6px 12px",
+    margin: "4px",
+    borderRadius: 6,
+    border: `1px solid ${color}`,
+    cursor: "pointer",
+    background: active ? color + "22" : "transparent",
+    color: "var(--text)",
+    fontSize: 12,
   });
 
   return (
     <div style={{ marginTop: 60 }}>
-      <h2 style={{ textAlign: "center" }}>Grafik Hubungan Harga RON {ron} vs Brent, MOPS, RBOB, dan USD</h2>
+      <h2 style={{ textAlign: "center" }}>Grafik Hubungan Harga RON {ron}</h2>
 
-      {/* RON SELECTOR */}
-      <div style={{ textAlign: "center", marginBottom: 20, marginTop: 5 }}>
+      {/* RON + Smooth selectors */}
+      <div style={{ textAlign: "center", marginBottom: 16 }}>
         <select
           value={ron}
           onChange={(e) => setRon(e.target.value)}
@@ -285,6 +343,7 @@ function RonGraph({ history }: { history: any[] }) {
             border: "1px solid var(--border)",
             background: "var(--card)",
             color: "var(--text)",
+            marginRight: 20,
           }}
         >
           <option value="90">RON 90</option>
@@ -292,80 +351,155 @@ function RonGraph({ history }: { history: any[] }) {
           <option value="95">RON 95</option>
           <option value="98">RON 98</option>
         </select>
+
+        <select
+          value={smooth}
+          onChange={(e) => setSmooth(Number(e.target.value))}
+          style={{
+            padding: 8,
+            borderRadius: 6,
+            border: "1px solid var(--border)",
+            background: "var(--card)",
+            color: "var(--text)",
+          }}
+        >
+          <option value={0}>Linear</option>
+          <option value={1}>Smooth</option>
+          <option value={2}>Very Smooth</option>
+          <option value={3}>Bezier</option>
+        </select>
       </div>
 
+      {/* TOGGLE BUTTONS */}
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        {Object.keys(visible).map((key) => (
+          <button
+            key={key}
+            style={toggleStyle(visible[key as keyof typeof visible], colors[key as keyof typeof colors])}
+            onClick={() =>
+              setVisible((v) => ({ ...v, [key]: !v[key as keyof typeof visible] }))
+            }
+          >
+            {key.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      {/* GRAPH */}
       <div
         className="graph-wrapper"
-        style={{
-          width: "75%",
-          margin: "0 auto"
-        }}
+        style={{ width: "75%", margin: "0 auto" }}
       >
         <ResponsiveContainer width="100%" height={380}>
           <LineChart data={indexed}>
             <XAxis dataKey="month" stroke="var(--text2)" />
-            <YAxis stroke="var(--text2)" domain={["auto", "auto"]} />
+            <YAxis stroke="var(--text2)" />
 
-            {/* FIX TYPE ERRORS */}
+            {/* RAW VALUE TOOLTIP */}
             <Tooltip
-              formatter={(value: any, name: any) => {
+              formatter={(value: any, name: any, props: any) => {
                 const label =
                   typeof name === "string"
                     ? name.replace("_idx", "")
                     : String(name ?? "");
 
-                return [Number(value).toFixed(3), label];
+                const rawKey = label.toLowerCase() + "_raw";
+                const raw = props?.payload?.[rawKey];
+
+                return [
+                  `${Number(value).toFixed(3)}   (raw: ${raw?.toLocaleString(
+                    "id-ID"
+                  ) ?? "–"})`,
+                  label,
+                ];
               }}
             />
 
             <Legend />
 
-            {/* ---------- FUEL PRICE LINES ---------- */}
-            <Line
-              type="monotone"
-              dataKey="pertamina_idx"
-              name="Pertamina"
-              stroke="#ff3b3b"
-              strokeWidth={2}
-              dot={false}
-              activeDot={false}
-            />
+            {/* Fuel lines */}
+            {visible.pertamina && (
+              <Line
+                type={smoothingType}
+                dataKey="pertamina_idx"
+                name="Pertamina"
+                stroke={colors.pertamina}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {visible.bp && (
+              <Line
+                type={smoothingType}
+                dataKey="bp_idx"
+                name="BP"
+                stroke={colors.bp}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {visible.shell && (
+              <Line
+                type={smoothingType}
+                dataKey="shell_idx"
+                name="Shell"
+                stroke={colors.shell}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {visible.vivo && (
+              <Line
+                type={smoothingType}
+                dataKey="vivo_idx"
+                name="Vivo"
+                stroke={colors.vivo}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
 
-            <Line
-              type="monotone"
-              dataKey="bp_idx"
-              name="BP"
-              stroke="#00c853"
-              strokeWidth={2}
-              dot={false}
-              activeDot={false}
-            />
-
-            <Line
-              type="monotone"
-              dataKey="shell_idx"
-              name="Shell"
-              stroke="#ffeb3b"
-              strokeWidth={2}
-              dot={false}
-              activeDot={false}
-            />
-
-            <Line
-              type="monotone"
-              dataKey="vivo_idx"
-              name="Vivo"
-              stroke="#2979ff"
-              strokeWidth={2}
-              dot={false}
-              activeDot={false}
-            />
-
-            {/* ---------- EXOGENOUS LINES ---------- */}
-            <Line type="monotone" dataKey="brent_idx" name="Brent" stroke="#00a6ffff" dot={false} />
-            <Line type="monotone" dataKey="rbob_idx" name="RBOB" stroke="#d438ffff" dot={false} />
-            <Line type="monotone" dataKey="usd_idx" name="USD/IDR" stroke="#71ff78ff" dot={false} />
-            <Line type="monotone" dataKey="mops_idx" name="MOPS" stroke="#ffa200ff" dot={false} />
+            {/* Commodities */}
+            {visible.brent && (
+              <Line
+                type={smoothingType}
+                dataKey="brent_idx"
+                name="Brent"
+                stroke={colors.brent}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {visible.rbob && (
+              <Line
+                type={smoothingType}
+                dataKey="rbob_idx"
+                name="RBOB"
+                stroke={colors.rbob}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {visible.usd && (
+              <Line
+                type={smoothingType}
+                dataKey="usd_idx"
+                name="USD/IDR"
+                stroke={colors.usd}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
+            {visible.mops && (
+              <Line
+                type={smoothingType}
+                dataKey="mops_idx"
+                name="MOPS"
+                stroke={colors.mops}
+                strokeWidth={2}
+                dot={false}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>
