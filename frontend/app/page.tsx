@@ -225,7 +225,9 @@ export default function Home() {
           last updated: {new Date(row.created_at).toLocaleString()}
         </p>
 
-        <p className="visits">👥 Total visitors: {visits.toLocaleString()}</p>
+        <p className="visits">
+          👥 total visitors: {Number(visits ?? 0).toLocaleString()}
+        </p>
 
         <p className="updated" style={{marginTop: 20, marginBottom: 20}}>
           by Audi Armadhani | 2026
