@@ -66,17 +66,21 @@ export default function Home() {
 
   return (
     <main className="page">
-      {/* DARK MODE TOGGLE */}
-      <button className="dark-toggle" onClick={toggleDark}>
-        {dark ? "🌚" : "🌝"}
-      </button>
 
+      {/* ---------- HEADER SECTION ---------- */}
+      <header className="header">
+        <div>
+          <div className="header-title">Prediksi Bensin</div>
+          <div className="header-sub">Not Financial Advice. DYOR.</div>
+        </div>
+
+        <button className="dark-toggle" onClick={toggleDark}>
+          {dark ? "🌚" : "🌝"}
+        </button>
+      </header>
+
+      {/* ---------- MAIN CONTENT ---------- */}
       <div className="container">
-        <h1 className="title">Prediksi Harga Bensin</h1>
-
-        <p className="updated">
-          Not Financial Advice. DYOR.
-        </p>
 
         <div className="table-wrapper">
           <table className="fuel-table">
@@ -125,7 +129,7 @@ export default function Home() {
         </p>
       </div>
 
-      {/* GLOBAL CSS */}
+      {/* ---------- GLOBAL CSS ---------- */}
       <style>{`
         :root {
           --bg: #f7f7f7;
@@ -155,17 +159,35 @@ export default function Home() {
         }
 
         .page {
-          padding: 40px;
-          display: flex;
-          justify-content: center;
-          position: relative;
+          padding: 0;
           font-family: sans-serif;
+          min-height: 100vh;
+        }
+
+        /* ---------- HEADER ---------- */
+        .header {
+          width: 100%;
+          padding: 26px 30px 20px 30px;
+          background: var(--bg);
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .header-title {
+          font-size: 32px;
+          font-weight: 700;
+          color: var(--text);
+        }
+
+        .header-sub {
+          font-size: 12px;
+          margin-top: 3px;
+          color: var(--text2);
         }
 
         .dark-toggle {
-          position: absolute;
-          top: 20px;
-          right: 20px;
           font-size: 28px;
           background: none;
           border: none;
@@ -176,14 +198,8 @@ export default function Home() {
         .container {
           width: 100%;
           max-width: 1200px;
-        }
-
-        .title {
-          text-align: center;
-          font-size: 36px;
-          font-weight: 700;
-          margin-bottom: 30px;
-          color: var(--text);
+          margin: 0 auto;
+          padding-top: 30px;
         }
 
         .table-wrapper {
@@ -222,23 +238,11 @@ export default function Home() {
           color: var(--text2);
         }
 
-        /* MOBILE FIXES */
+        /* MOBILE FIX */
         @media (max-width: 768px) {
-          .page {
-            padding: 0 !important;
-          }
-          .container {
-            max-width: 100%;
-            padding: 0;
-          }
           .table-wrapper {
             width: 100% !important;
-            margin: 0 !important;
             padding: 0 !important;
-          }
-          .fuel-table {
-            border-left: 0;
-            border-right: 0;
           }
         }
       `}</style>
@@ -247,16 +251,10 @@ export default function Home() {
 }
 
 /* ---------- RENDER CELL ---------- */
-function renderCell(
-  key: string,
-  preds: any,
-  confs: any,
-  current: any
-) {
+function renderCell(key: string, preds: any, confs: any, current: any) {
   if (!preds[key]) return "-";
 
   let predicted = preds[key];
-
   if (key === "pertamina_90") predicted = 10000;
 
   const low = Math.floor(predicted / 100) * 100;
@@ -268,7 +266,6 @@ function renderCell(
 
   let diffSymbol = "●";
   let diffColor = "var(--text3)";
-
   if (curr !== null) {
     if (midpoint > curr) diffSymbol = "▲", diffColor = "green";
     else if (midpoint < curr) diffSymbol = "▼", diffColor = "red";
