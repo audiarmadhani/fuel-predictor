@@ -228,43 +228,49 @@ function RonGraph({ history }: { history: any[] }) {
 
   if (!history || history.length === 0) return null;
 
+  /* -------------------------------
+     BUILD INDEXED SERIES
+  --------------------------------*/
+  const first = history[0];
+
+  const first_price =
+    first[`pertamina_${ron}`] ||
+    first[`vivo_${ron}`] ||
+    first[`bp_${ron}`] ||
+    first[`shell_${ron}`] ||
+    1;
+
+  const first_brent = first.brent || 1;
+  const first_rbob = first.rbob || 1;
+  const first_usd = first.usd_idr || 1;
+  const first_mops = first.base_mops || 1;
+
   const processed = history.map((row) => {
     const price =
       row[`pertamina_${ron}`] ||
       row[`vivo_${ron}`] ||
       row[`bp_${ron}`] ||
       row[`shell_${ron}`] ||
-      0;
-
-    const nums = {
-      price,
-      brent: row.brent,
-      rbob: row.rbob,
-      usd: row.usd_idr,
-      mops: row.base_mops,
-    };
-
-    const values = Object.values(nums).filter((v) => v != null);
-    const minVal = Math.min(...values);
-    const maxVal = Math.max(...values);
-
-    const scale = (v: number) =>
-      maxVal === minVal ? 0 : (v - minVal) / (maxVal - minVal);
+      1;
 
     return {
       month: row.month,
-      price_norm: scale(nums.price),
-      brent_norm: scale(nums.brent),
-      rbob_norm: scale(nums.rbob),
-      usd_norm: scale(nums.usd),
-      mops_norm: scale(nums.mops),
+
+      price_idx: price / first_price,
+      brent_idx: row.brent / first_brent,
+      rbob_idx: row.rbob / first_rbob,
+      usd_idx: row.usd_idr / first_usd,
+      mops_idx: row.base_mops / first_mops,
     };
   });
 
   return (
     <div style={{ marginTop: 60 }}>
-      <h2 style={{ textAlign: "center" }}>Grafik Hubungan Harga RON {ron}</h2>
+      <h2 style={{ textAlign: "center" }}>
+        Grafik Pergerakan Harga RON {ron} (Indexed)
+      </h2>
 
+      {/* RON selector */}
       <div style={{ textAlign: "center", marginBottom: 20 }}>
         <select
           value={ron}
@@ -287,17 +293,26 @@ function RonGraph({ history }: { history: any[] }) {
       <ResponsiveContainer width="100%" height={350}>
         <LineChart data={processed}>
           <XAxis dataKey="month" stroke="var(--text2)" />
-          <YAxis stroke="var(--text2)" domain={[0, 1]} />
+          <YAxis
+            stroke="var(--text2)"
+            domain={["auto", "auto"]}
+            tickFormatter={(v) => v.toFixed(2)}
+          />
 
-          <Tooltip formatter={(val, name) => [`${val}`, name]} />
+          <Tooltip
+            formatter={(value: any, name: any) => {
+              const label = typeof name === "string" ? name.replace("_idx", "") : String(name || "");
+              return [Number(value).toFixed(3), label];
+            }}
+          />
 
           <Legend />
 
-          <Line type="monotone" dataKey="price_norm" name="Harga" stroke="#ff5722" strokeWidth={2} />
-          <Line type="monotone" dataKey="brent_norm" name="Brent" stroke="#2196f3" />
-          <Line type="monotone" dataKey="rbob_norm" name="RBOB" stroke="#9c27b0" />
-          <Line type="monotone" dataKey="usd_norm" name="USD/IDR" stroke="#4caf50" />
-          <Line type="monotone" dataKey="mops_norm" name="MOPS" stroke="#ffc107" />
+          <Line type="monotone" dataKey="price_idx" name="Harga RON" stroke="#ff5722" strokeWidth={2} />
+          <Line type="monotone" dataKey="brent_idx" name="Brent" stroke="#2196f3" />
+          <Line type="monotone" dataKey="rbob_idx" name="RBOB" stroke="#9c27b0" />
+          <Line type="monotone" dataKey="usd_idx" name="USD/IDR" stroke="#4caf50" />
+          <Line type="monotone" dataKey="mops_idx" name="MOPS" stroke="#ffc107" />
         </LineChart>
       </ResponsiveContainer>
     </div>
