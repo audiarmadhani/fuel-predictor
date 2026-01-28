@@ -250,15 +250,25 @@ function RonGraph({ history }: { history: any[] }) {
   /* ------------ BASELINES (first data row) ------------ */
   const first = history[0];
 
+  /* ------------ FIND FIRST VALID BASELINES ------------ */
+  function findFirstValid(history: any[], key: string) {
+    for (const row of history) {
+      const v = safe(row[key]);
+      if (v != null) return v;
+    }
+    return 1; // fallback so no division-by-zero
+  }
+
   const base = {
-    pertamina: safe(first[`pertamina_${ron}`]) ?? 1,
-    bp: safe(first[`bp_${ron}`]) ?? 1,
-    shell: safe(first[`shell_${ron}`]) ?? 1,
-    vivo: safe(first[`vivo_${ron}`]) ?? 1,
-    brent: safe(first.brent) ?? 1,
-    rbob: safe(first.rbob) ?? 1,
-    usd: safe(first.usd_idr) ?? 1,
-    mops: safe(first.base_mops) ?? 1,
+    pertamina: findFirstValid(history, `pertamina_${ron}`),
+    bp: findFirstValid(history, `bp_${ron}`),
+    shell: findFirstValid(history, `shell_${ron}`),
+    vivo: findFirstValid(history, `vivo_${ron}`),
+
+    brent: findFirstValid(history, "brent"),
+    rbob: findFirstValid(history, "rbob"),
+    usd: findFirstValid(history, "usd_idr"),
+    mops: findFirstValid(history, "base_mops"),
   };
 
   /* ------------ INDEXED + RAW DATASET ------------ */
