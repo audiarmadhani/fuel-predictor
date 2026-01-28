@@ -228,50 +228,54 @@ function RonGraph({ history }: { history: any[] }) {
 
   if (!history || history.length === 0) return null;
 
-  /* -------------------------------
-     BUILD INDEXED SERIES
-  --------------------------------*/
-  const first = history[0];
+  // ---------- Build indexed values ----------
+  const firstRow = history[0];
 
-  const first_price =
-    first[`pertamina_${ron}`] ||
-    first[`vivo_${ron}`] ||
-    first[`bp_${ron}`] ||
-    first[`shell_${ron}`] ||
-    1;
+  const indexed = history.map((row) => {
+    const price_pertamina = row[`pertamina_${ron}`] ?? null;
+    const price_bp = row[`bp_${ron}`] ?? null;
+    const price_shell = row[`shell_${ron}`] ?? null;
+    const price_vivo = row[`vivo_${ron}`] ?? null;
 
-  const first_brent = first.brent || 1;
-  const first_rbob = first.rbob || 1;
-  const first_usd = first.usd_idr || 1;
-  const first_mops = first.base_mops || 1;
+    const brent = row.brent;
+    const rbob = row.rbob;
+    const usd = row.usd_idr;
+    const mops = row.base_mops;
 
-  const processed = history.map((row) => {
-    const price =
-      row[`pertamina_${ron}`] ||
-      row[`vivo_${ron}`] ||
-      row[`bp_${ron}`] ||
-      row[`shell_${ron}`] ||
-      1;
+    // first-row baselines
+    const base_pert = firstRow[`pertamina_${ron}`] ?? 1;
+    const base_bp = firstRow[`bp_${ron}`] ?? 1;
+    const base_shell = firstRow[`shell_${ron}`] ?? 1;
+    const base_vivo = firstRow[`vivo_${ron}`] ?? 1;
+
+    const base_brent = firstRow.brent ?? 1;
+    const base_rbob = firstRow.rbob ?? 1;
+    const base_usd = firstRow.usd_idr ?? 1;
+    const base_mops = firstRow.base_mops ?? 1;
 
     return {
       month: row.month,
 
-      price_idx: price / first_price,
-      brent_idx: row.brent / first_brent,
-      rbob_idx: row.rbob / first_rbob,
-      usd_idx: row.usd_idr / first_usd,
-      mops_idx: row.base_mops / first_mops,
+      // --- Indexed fuel prices ---
+      pertamina_idx: price_pertamina ? price_pertamina / base_pert : null,
+      bp_idx: price_bp ? price_bp / base_bp : null,
+      shell_idx: price_shell ? price_shell / base_shell : null,
+      vivo_idx: price_vivo ? price_vivo / base_vivo : null,
+
+      // --- Indexed exogenous variables ---
+      brent_idx: brent / base_brent,
+      rbob_idx: rbob / base_rbob,
+      usd_idx: usd / base_usd,
+      mops_idx: mops / base_mops,
     };
   });
 
   return (
     <div style={{ marginTop: 60 }}>
-      <h2 style={{ textAlign: "center" }}>
-        Grafik Pergerakan Harga RON {ron} (Indexed)
-      </h2>
+      <h2 style={{ textAlign: "center" }}>Grafik Hubungan Harga RON {ron} vs Brent, MOPS, RBOB, dan USD</h2>
 
-      {/* RON selector */}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
+      {/* RON SELECTOR */}
+      <div style={{ textAlign: "center", marginBottom: 20, marginTop: 5 }}>
         <select
           value={ron}
           onChange={(e) => setRon(e.target.value)}
@@ -290,31 +294,81 @@ function RonGraph({ history }: { history: any[] }) {
         </select>
       </div>
 
-      <ResponsiveContainer width="100%" height={350}>
-        <LineChart data={processed}>
-          <XAxis dataKey="month" stroke="var(--text2)" />
-          <YAxis
-            stroke="var(--text2)"
-            domain={["auto", "auto"]}
-            tickFormatter={(v) => v.toFixed(2)}
-          />
+      <div
+        className="graph-wrapper"
+        style={{
+          width: "75%",
+          margin: "0 auto"
+        }}
+      >
+        <ResponsiveContainer width="100%" height={380}>
+          <LineChart data={indexed}>
+            <XAxis dataKey="month" stroke="var(--text2)" />
+            <YAxis stroke="var(--text2)" domain={["auto", "auto"]} />
 
-          <Tooltip
-            formatter={(value: any, name: any) => {
-              const label = typeof name === "string" ? name.replace("_idx", "") : String(name || "");
-              return [Number(value).toFixed(3), label];
-            }}
-          />
+            {/* FIX TYPE ERRORS */}
+            <Tooltip
+              formatter={(value: any, name: any) => {
+                const label =
+                  typeof name === "string"
+                    ? name.replace("_idx", "")
+                    : String(name ?? "");
 
-          <Legend />
+                return [Number(value).toFixed(3), label];
+              }}
+            />
 
-          <Line type="monotone" dataKey="price_idx" name="Harga RON" stroke="#ff5722" strokeWidth={2} />
-          <Line type="monotone" dataKey="brent_idx" name="Brent" stroke="#2196f3" />
-          <Line type="monotone" dataKey="rbob_idx" name="RBOB" stroke="#9c27b0" />
-          <Line type="monotone" dataKey="usd_idx" name="USD/IDR" stroke="#4caf50" />
-          <Line type="monotone" dataKey="mops_idx" name="MOPS" stroke="#ffc107" />
-        </LineChart>
-      </ResponsiveContainer>
+            <Legend />
+
+            {/* ---------- FUEL PRICE LINES ---------- */}
+            <Line
+              type="monotone"
+              dataKey="pertamina_idx"
+              name="Pertamina"
+              stroke="#ff3b3b"
+              strokeWidth={2}
+              dot={false}
+              activeDot={false}
+            />
+
+            <Line
+              type="monotone"
+              dataKey="bp_idx"
+              name="BP"
+              stroke="#00c853"
+              strokeWidth={2}
+              dot={false}
+              activeDot={false}
+            />
+
+            <Line
+              type="monotone"
+              dataKey="shell_idx"
+              name="Shell"
+              stroke="#ffeb3b"
+              strokeWidth={2}
+              dot={false}
+              activeDot={false}
+            />
+
+            <Line
+              type="monotone"
+              dataKey="vivo_idx"
+              name="Vivo"
+              stroke="#2979ff"
+              strokeWidth={2}
+              dot={false}
+              activeDot={false}
+            />
+
+            {/* ---------- EXOGENOUS LINES ---------- */}
+            <Line type="monotone" dataKey="brent_idx" name="Brent" stroke="#00a6ffff" dot={false} />
+            <Line type="monotone" dataKey="rbob_idx" name="RBOB" stroke="#d438ffff" dot={false} />
+            <Line type="monotone" dataKey="usd_idx" name="USD/IDR" stroke="#71ff78ff" dot={false} />
+            <Line type="monotone" dataKey="mops_idx" name="MOPS" stroke="#ffa200ff" dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -431,6 +485,10 @@ const GLOBAL_CSS = (
     @media (max-width: 768px) {
       .table-wrapper {
         width: 100% !important;
+      }
+      .graph-wrapper {
+        width: 90% !important;
+        padding: 0 12px;
       }
     }
   `}</style>
