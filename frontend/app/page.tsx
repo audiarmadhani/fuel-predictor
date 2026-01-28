@@ -260,7 +260,7 @@ function renderCell(
         </span>
       </div>
 
-      <div style={{ fontSize: 12, color: "var(--text2)", marginTop: 2 }}>
+      <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 2 }}>
         {BRAND_LABELS[key] || key}
       </div>
 
@@ -270,7 +270,7 @@ function renderCell(
         </div>
       )}
 
-      <div style={{ fontSize: 11, color: "var(--text3)" }}>
+      <div style={{ fontSize: 9, color: "var(--text3)" }}>
         Confidence: {conf}%
       </div>
     </div>
