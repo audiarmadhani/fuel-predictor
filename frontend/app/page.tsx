@@ -15,6 +15,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+/* ------------------ CONSTANTS ------------------ */
+
 const BRAND_LABELS: Record<string, string> = {
   pertamina_90: "Pertalite",
   pertamina_92: "Pertamax",
@@ -35,19 +37,15 @@ const BRAND_LABELS: Record<string, string> = {
 
 const RON_LIST = ["90", "92", "95", "98"];
 
-const [history, setHistory] = useState<any[]>([]);
-
-// Load historical CSV via backend API
-const histRes = await fetch("https://fuel-predictor-backend-rf1e.onrender.com");
-const histJson = await histRes.json();
-setHistory(histJson.rows || []);
+/* ------------------ MAIN COMPONENT ------------------ */
 
 export default function Home() {
   const [row, setRow] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dark, setDark] = useState(false);
 
-  /* INIT DARK MODE */
+  /* ---------- INIT DARK MODE ---------- */
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
     const isDark = saved === "true";
@@ -62,7 +60,7 @@ export default function Home() {
     localStorage.setItem("darkMode", next.toString());
   };
 
-  /* LOAD DATA */
+  /* ---------- LOAD SUPABASE LATEST ROW ---------- */
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -76,17 +74,31 @@ export default function Home() {
     })();
   }, []);
 
-  if (loading) return <div style={{ padding: 40 }}>Loading…</div>;
+  /* ---------- LOAD HISTORICAL DATA FROM BACKEND ---------- */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("https://fuel-predictor-backend-rf1e.onrender.com");
+        const json = await res.json();
+        setHistory(json.rows || []);
+      } catch (err) {
+        console.error("History fetch failed:", err);
+      }
+    })();
+  }, []);
+
+  if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
   if (!row) return <div style={{ padding: 40 }}>No predictions yet</div>;
 
   const preds = row.model;
   const confs = row.confidence;
   const current = row.current_prices;
 
+  /* ------------------ PAGE RENDER ------------------ */
   return (
     <main className="page">
 
-      {/* ---------- HEADER SECTION ---------- */}
+      {/* ---------- HEADER ---------- */}
       <header className="header">
         <div>
           <div className="header-title">Prediksi Bensin</div>
@@ -98,9 +110,9 @@ export default function Home() {
         </button>
       </header>
 
-      {/* ---------- MAIN CONTENT ---------- */}
       <div className="container">
-
+        
+        {/* ---------- TABLE ---------- */}
         <div className="table-wrapper">
           <table className="fuel-table">
             <thead>
@@ -118,20 +130,24 @@ export default function Home() {
                 <tr key={ron}>
                   <td className="ron-cell">RON {ron}</td>
 
+                  {/* Pertamina */}
                   <td>{renderCell(`pertamina_${ron}`, preds, confs, current)}</td>
 
+                  {/* BP */}
                   <td>
                     {["92", "95"].includes(ron)
                       ? renderCell(`bp_${ron}`, preds, confs, current)
                       : "-"}
                   </td>
 
+                  {/* Shell */}
                   <td>
                     {ron === "90"
                       ? "-"
                       : renderCell(`shell_${ron}`, preds, confs, current)}
                   </td>
 
+                  {/* Vivo */}
                   <td>
                     {ron === "98"
                       ? "-"
@@ -143,7 +159,7 @@ export default function Home() {
           </table>
         </div>
 
-        {/* GRAPH SECTION */}
+        {/* ---------- GRAPH ---------- */}
         <RonGraph history={history} />
 
         <p className="updated">
@@ -151,128 +167,13 @@ export default function Home() {
         </p>
       </div>
 
-      {/* ---------- GLOBAL CSS ---------- */}
-      <style>{`
-        :root {
-          --bg: #f7f7f7;
-          --text: #222;
-          --text2: #555;
-          --text3: #888;
-          --card: #ffffff;
-          --th-bg: #e8e8e8;
-          --border: #cccccc;
-        }
-
-        body.dark {
-          --bg: #0d0d0d;
-          --text: #f2f2f2;
-          --text2: #ccc;
-          --text3: #999;
-          --card: #1a1a1a;
-          --th-bg: #333;
-          --border: #444;
-        }
-
-        body {
-          background: var(--bg);
-          color: var(--text);
-          margin: 0;
-          transition: 0.25s ease;
-        }
-
-        .page {
-          padding: 0;
-          font-family: sans-serif;
-          min-height: 100vh;
-        }
-
-        /* ---------- HEADER ---------- */
-        .header {
-          width: 100%;
-          padding: 26px 30px 20px 30px;
-          background: var(--bg);
-          border-bottom: 1px solid var(--border);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .header-title {
-          font-size: 32px;
-          font-weight: 700;
-          color: var(--text);
-        }
-
-        .header-sub {
-          font-size: 12px;
-          margin-top: 3px;
-          color: var(--text2);
-        }
-
-        .dark-toggle {
-          font-size: 28px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--text);
-        }
-
-        .container {
-          width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding-top: 30px;
-        }
-
-        .table-wrapper {
-          width: 90%;
-          margin: 0 auto;
-          overflow-x: auto;
-        }
-
-        .fuel-table {
-          width: 100%;
-          border-collapse: collapse;
-          background: var(--card);
-          border: 1px solid var(--border);
-        }
-
-        th {
-          padding: 12px 10px;
-          background: var(--th-bg);
-          border-bottom: 2px solid var(--border);
-          color: var(--text);
-        }
-
-        td {
-          padding: 14px 10px;
-          text-align: center;
-          border-bottom: 1px solid var(--border);
-        }
-
-        .ron-cell {
-          font-weight: 700;
-        }
-
-        .updated {
-          margin-top: 40px;
-          text-align: center;
-          color: var(--text2);
-        }
-
-        /* MOBILE FIX */
-        @media (max-width: 768px) {
-          .table-wrapper {
-            width: 100% !important;
-            padding: 0 !important;
-          }
-        }
-      `}</style>
+      {GLOBAL_CSS}
     </main>
   );
 }
 
-/* ---------- RENDER CELL ---------- */
+/* ------------------ CELL RENDER ------------------ */
+
 function renderCell(key: string, preds: any, confs: any, current: any) {
   if (!preds[key]) return "-";
 
@@ -282,12 +183,12 @@ function renderCell(key: string, preds: any, confs: any, current: any) {
   const low = Math.floor(predicted / 100) * 100;
   const high = Math.ceil(predicted / 100) * 100;
   const midpoint = Math.round((low + high) / 2);
-
   const conf = Math.round(confs[key]);
   const curr = current?.[key] || null;
 
   let diffSymbol = "●";
   let diffColor = "var(--text3)";
+
   if (curr !== null) {
     if (midpoint > curr) diffSymbol = "▲", diffColor = "green";
     else if (midpoint < curr) diffSymbol = "▼", diffColor = "red";
@@ -304,7 +205,7 @@ function renderCell(key: string, preds: any, confs: any, current: any) {
       </div>
 
       <div style={{ fontSize: 14, color: "var(--text2)", marginTop: 2 }}>
-        {BRAND_LABELS[key] || key}
+        {BRAND_LABELS[key]}
       </div>
 
       {curr !== null && (
@@ -320,14 +221,20 @@ function renderCell(key: string, preds: any, confs: any, current: any) {
   );
 }
 
+/* ------------------ GRAPH COMPONENT ------------------ */
+
 function RonGraph({ history }: { history: any[] }) {
   const [ron, setRon] = useState("92");
 
   if (!history || history.length === 0) return null;
 
-  // ----- Make a normalized dataset -----
   const processed = history.map((row) => {
-    const price = row[`pertamina_${ron}`] || row[`vivo_${ron}`] || 0;
+    const price =
+      row[`pertamina_${ron}`] ||
+      row[`vivo_${ron}`] ||
+      row[`bp_${ron}`] ||
+      row[`shell_${ron}`] ||
+      0;
 
     const nums = {
       price,
@@ -337,8 +244,7 @@ function RonGraph({ history }: { history: any[] }) {
       mops: row.base_mops,
     };
 
-    // normalization per row using min-max
-    const values = Object.values(nums).filter((x) => x !== null);
+    const values = Object.values(nums).filter((v) => v != null);
     const minVal = Math.min(...values);
     const maxVal = Math.max(...values);
 
@@ -352,22 +258,13 @@ function RonGraph({ history }: { history: any[] }) {
       rbob_norm: scale(nums.rbob),
       usd_norm: scale(nums.usd),
       mops_norm: scale(nums.mops),
-      // raw numbers for tooltip
-      price_raw: nums.price,
-      brent_raw: nums.brent,
-      rbob_raw: nums.rbob,
-      usd_raw: nums.usd,
-      mops_raw: nums.mops,
     };
   });
 
   return (
     <div style={{ marginTop: 60 }}>
-      <h2 style={{ textAlign: "center" }}>
-        Grafik Hubungan Harga RON {ron}
-      </h2>
+      <h2 style={{ textAlign: "center" }}>Grafik Hubungan Harga RON {ron}</h2>
 
-      {/* RON selector */}
       <div style={{ textAlign: "center", marginBottom: 20 }}>
         <select
           value={ron}
@@ -391,26 +288,135 @@ function RonGraph({ history }: { history: any[] }) {
         <LineChart data={processed}>
           <XAxis dataKey="month" stroke="var(--text2)" />
           <YAxis stroke="var(--text2)" domain={[0, 1]} />
-          <Tooltip
-            formatter={(value: any, name?: string) => {
-              return [value, name ?? ""];
-            }}
-          />
+
+          <Tooltip formatter={(val, name) => [`${val}`, name]} />
+
           <Legend />
 
-          <Line
-            type="monotone"
-            dataKey="price_norm"
-            name={`Harga RON ${ron}`}
-            stroke="#ff5722"
-            strokeWidth={2}
-          />
+          <Line type="monotone" dataKey="price_norm" name="Harga" stroke="#ff5722" strokeWidth={2} />
           <Line type="monotone" dataKey="brent_norm" name="Brent" stroke="#2196f3" />
           <Line type="monotone" dataKey="rbob_norm" name="RBOB" stroke="#9c27b0" />
           <Line type="monotone" dataKey="usd_norm" name="USD/IDR" stroke="#4caf50" />
-          <Line type="monotone" dataKey="mops_norm" name="Base MOPS" stroke="#ffc107" />
+          <Line type="monotone" dataKey="mops_norm" name="MOPS" stroke="#ffc107" />
         </LineChart>
       </ResponsiveContainer>
     </div>
   );
 }
+
+/* ------------------ GLOBAL CSS ------------------ */
+
+const GLOBAL_CSS = (
+  <style>{`
+    :root {
+      --bg: #f7f7f7;
+      --text: #222;
+      --text2: #555;
+      --text3: #888;
+      --card: #ffffff;
+      --th-bg: #e8e8e8;
+      --border: #cccccc;
+    }
+
+    body.dark {
+      --bg: #0d0d0d;
+      --text: #f2f2f2;
+      --text2: #ccc;
+      --text3: #999;
+      --card: #1a1a1a;
+      --th-bg: #333;
+      --border: #444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      transition: 0.25s ease;
+    }
+
+    .page {
+      padding: 0;
+      font-family: sans-serif;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+      width: 100%;
+      padding: 26px 30px 20px 30px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .header-sub {
+      font-size: 12px;
+      margin-top: 3px;
+      color: var(--text2);
+    }
+
+    .dark-toggle {
+      font-size: 28px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 30px;
+    }
+
+    .table-wrapper {
+      width: 90%;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+
+    .fuel-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    th {
+      padding: 12px 10px;
+      background: var(--th-bg);
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      padding: 14px 10px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ron-cell {
+      font-weight: 700;
+    }
+
+    .updated {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--text2);
+    }
+
+    @media (max-width: 768px) {
+      .table-wrapper {
+        width: 100% !important;
+      }
+    }
+  `}</style>
+);
