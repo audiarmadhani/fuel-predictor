@@ -55,6 +55,18 @@ export default function Home() {
     localStorage.setItem("darkMode", next.toString());
   };
 
+  const [visits, setVisits] = useState<number>(0);
+
+  useEffect(() => {
+    (async () => {
+      const { count } = await supabase
+        .from("visits")
+        .select("*", { count: "exact", head: true });
+
+      setVisits(count ?? 0);
+    })();
+  }, []);
+
   /* ---------- LOAD SUPABASE LATEST ROW ---------- */
   useEffect(() => {
     (async () => {
@@ -69,25 +81,31 @@ export default function Home() {
     })();
   }, []);
 
-/* ---------- LOAD HISTORICAL DATA ---------- */
-useEffect(() => {
-  (async () => {
-    try {
-      const res = await fetch("https://fuel-predictor-backend-rf1e.onrender.com/api/history");
-      const json = await res.json();
-      setHistory(json.rows || []);
-    } catch (err) {
-      console.error("History fetch failed:", err);
-    }
-  })();
-}, []);
+  /* ---------- LOAD HISTORICAL DATA ---------- */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("https://fuel-predictor-backend-rf1e.onrender.com/api/history");
+        const json = await res.json();
+        setHistory(json.rows || []);
+      } catch (err) {
+        console.error("History fetch failed:", err);
+      }
+    })();
+  }, []);
 
-  if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
-  if (!row) return <div style={{ padding: 40 }}>No predictions yet</div>;
+    if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
+    if (!row) return <div style={{ padding: 40 }}>No predictions yet</div>;
 
-  const preds = row.model;
-  const confs = row.confidence;
-  const current = row.current_prices;
+    const preds = row.model;
+    const confs = row.confidence;
+    const current = row.current_prices;
+
+  useEffect(() => {
+    fetch("https://fuel-predictor-backend-rf1e.onrender.com/api/track", {
+      method: "POST",
+    });
+  }, []);
 
   /* ------------------ PAGE RENDER ------------------ */
   return (
@@ -206,6 +224,8 @@ useEffect(() => {
         <p className="updated">
           last updated: {new Date(row.created_at).toLocaleString()}
         </p>
+
+        <p className="visits">👥 Total visitors: {visits.toLocaleString()}</p>
 
         <p className="updated" style={{marginTop: 20, marginBottom: 20}}>
           by Audi Armadhani | 2026
@@ -439,6 +459,13 @@ const GLOBAL_CSS = (
     .footer-icon:hover {
       opacity: 0.7;
       transform: scale(1.08);
+    }
+
+    .visits {
+      margin-top: 12px;
+      text-align: center;
+      color: var(--text2);
+      font-size: 13px;
     }
 
     @media (max-width: 600px) {
