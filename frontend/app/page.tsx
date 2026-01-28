@@ -260,15 +260,15 @@ function renderCell(
         </span>
       </div>
 
+      <div style={{ fontSize: 12, color: "var(--text2)", marginTop: 2 }}>
+        {BRAND_LABELS[key] || key}
+      </div>
+
       {curr !== null && (
         <div style={{ fontSize: 12, color: "var(--text2)" }}>
           Current: {curr.toLocaleString("id-ID")}
         </div>
       )}
-
-      <div style={{ fontSize: 12, color: "var(--text2)", marginTop: 2 }}>
-        {BRAND_LABELS[key] || key}
-      </div>
 
       <div style={{ fontSize: 11, color: "var(--text3)" }}>
         Confidence: {conf}%
